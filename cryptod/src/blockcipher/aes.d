@@ -2,147 +2,13 @@
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
  
-
+ 
 module cryptod.blockcipher.aes;
 
 import std.stdio, std.conv, std.math, std.string, std.format, std.range;
 
 import cryptod.blockcipher.blockcipher;
 
-struct word
-{
-	ubyte[4] w;
-	
-	pure this (ubyte a, ubyte b, ubyte c, ubyte d)
-	{
-		w[0] = a; w[1] = b; w[2] = c; w[3] = d;
-	}
-	
-	pure this (ubyte[4] a)
-	{
-		w[0] = a[0]; w[1] = a[1]; w[2] = a[2]; w[3] = a[3];
-	}
-	
-	pure this (uint a)
-	{
-		w[3] = to!ubyte((a >> 24) & 0xFF) ;
-		w[2] = to!ubyte((a >> 16) & 0xFF) ;
-		w[1] = to!ubyte((a >> 8 ) & 0XFF) ;
-		w[0] = to!ubyte((a        & 0XFF));
-	}
-	
-	uint toInt()
-	{
-		uint x;
-		
-		for (ubyte i = 0; i < 4; i++)
-		{
-			x += this.w[i];
-			x = x << 8;
-		}
-			
-		return x;
-	}
-	
-	ubyte[] toUbyteArray()
-	{
-		ubyte[] ws;
-		ws ~= this.w[0];
-		ws ~= this.w[1];
-		ws ~= this.w[2];
-		ws ~= this.w[3];
-		return ws;
-	}
-	
-	word opBinary(string op)(word rhs)
-	{
-		static if (op == "^") 
-		{
-			word wr;
-			
-			wr.w[0] = this.w[0] ^ rhs.w[0];
-			wr.w[1] = this.w[1] ^ rhs.w[1];
-			wr.w[2] = this.w[2] ^ rhs.w[2];
-			wr.w[3] = this.w[3] ^ rhs.w[3];
-		
-			return wr;
-		}
-		static if (op == "|") 
-		{
-			word wr;
-			
-			wr.w[0] = this.w[0] | rhs.w[0];
-			wr.w[1] = this.w[1] | rhs.w[1];
-			wr.w[2] = this.w[2] | rhs.w[2];
-			wr.w[3] = this.w[3] | rhs.w[3];
-		
-			return wr;
-		}
-		static if (op == "&") 
-		{
-			word wr;
-			
-			wr.w[0] = this.w[0] & rhs.w[0];
-			wr.w[1] = this.w[1] & rhs.w[1];
-			wr.w[2] = this.w[2] & rhs.w[2];
-			wr.w[3] = this.w[3] & rhs.w[3];
-		
-			return wr;
-		}
-		static if (op == "+") 
-		{
-			word wr;
-			
-			uint x = toInt();
-			uint y = rhs.toInt();
-			
-			wr = word(x + y);
-		
-			return wr;
-		}
-	}
-	word opBinary(string op)(ubyte rhs) 
-	{
-		static if (op == "^") 
-		{
-			word wr;
-			
-			wr.w[0] = this.w[0] ^ rhs;
-			wr.w[1] = this.w[1];
-			wr.w[2] = this.w[2];
-			wr.w[3] = this.w[3];
-		
-			return wr;
-		}
-	}
-	word opBinary(string op)(uint n) 
-	{
-		static if (op == ">>") 
-		{
-			word wr;
-			
-			uint x = toInt();
-			
-			x = x >>> n;
-			
-			wr = word(x);
-			
-			return wr;
-		}
-		static if (op == "<<") 
-		{
-			word wr;
-			
-			uint x = toInt();
-			
-			x = x << n;
-			
-			wr = word(x);
-			
-			return wr;
-		}
-	}
-}
 ///The AES standard with a fixed Nb = 4.
 class AES //this is not the full Rijndael algorithm. The full algorithm would have a modifiable Nb...
 {
@@ -303,7 +169,8 @@ class AES //this is not the full Rijndael algorithm. The full algorithm would ha
 	ubyte Nb = 4;
 	ubyte Nr;
 	ubyte Nk;
-	word[] w;
+	//word[] w;
+	uint[] w;
 	
 	this(ubyte[] key)
 	{
@@ -352,13 +219,24 @@ class AES //this is not the full Rijndael algorithm. The full algorithm would ha
 		return statet;
 	}
 	
-	pure ubyte[4][4] AddRoundKey(ubyte[4][4] state, word[] v)
+	/*pure ubyte[4][4] AddRoundKey(ubyte[4][4] state, word[] v)
 	{		
 		for (int c = 0; c < Nb; c++)
 		{
 			for (int r; r < 4; r++)
 			{
 				state[r][c] = state[r][c] ^ v[c].w[r];
+			}
+		}
+		return state;
+	}*/
+	pure ubyte[4][4] AddRoundKey(ubyte[4][4] state, uint[] v)
+	{		
+		for (int c = 0; c < Nb; c++)
+		{
+			for (int r; r < 4; r++)
+			{
+				state[r][c] = state[r][c] ^ ((v[c]>>(r*8))&0xFF);
 			}
 		}
 		return state;
@@ -462,7 +340,7 @@ class AES //this is not the full Rijndael algorithm. The full algorithm would ha
 		return outb;
 	}
 	
-	pure word[] KeyExpansion(ubyte[] key)
+	/*pure word[] KeyExpansion(ubyte[] key)
 	{
 		word[] v = new word[Nb * (Nr + 1)];
 		
@@ -503,6 +381,51 @@ class AES //this is not the full Rijndael algorithm. The full algorithm would ha
 			swap(i, to!ubyte(i+1));
 		}
 		return s;
+	}*/
+	
+	pure uint[] KeyExpansion(ubyte[] key)
+	{
+		uint[] v = new uint[Nb * (Nr + 1)];
+		
+		for(ubyte i = 0; i < Nk; i++)
+		{
+			v[i] = key[4*i] + (key[4*i+1] * 0x100) + (key[4*i+2] * 0x10000) + (key[4*i+3] * 0x1000000);
+		}
+		
+		for (ubyte i = Nk; i < Nb * (Nr+1); i++)
+		{
+			uint temp = v[i-1];
+			if(i % Nk == 0)
+				temp = SubWord(RotWord(temp)) ^ Rcon[i/Nk];
+			else if(Nk > 6 && i % Nk == 4)
+				temp = SubWord(temp);
+			v[i] = v[i-Nk] ^ temp;
+		}
+		return v;
+	}
+		
+	pure uint SubWord(uint s)
+	{
+		ubyte[] sw = (cast(ubyte*)&s)[0..4];
+		for(ubyte i = 0; i < 4; i++)
+			sw[i] = sBox[sw[i]];
+		return sw[0]+sw[1]*0x100+sw[2]*0x10000+sw[3]*0x1000000;
+	}
+	
+	pure uint RotWord(uint s)
+	{
+		ubyte[] sw = (cast(ubyte*)&s)[0..4];
+		void swap(uint a, uint b)
+		{
+			sw[a] = sw[a] ^ sw[b];
+			sw[b] = sw[a] ^ sw[b];
+			sw[a] = sw[a] ^ sw[b];
+		}
+		for (uint i = 0; i < 3; i++)
+		{
+			swap(i, i+1);
+		}
+		return sw[0]+sw[1]*0x100+sw[2]*0x10000+sw[3]*0x1000000;
 	}
 	
 	string toPlainText(ubyte[] inb)
@@ -561,7 +484,7 @@ class AES //this is not the full Rijndael algorithm. The full algorithm would ha
 	unittest
 	{
 		ubyte[] key128 = [0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c];
-		Rijndael testAes128 = new Rijndael(key128);
+		AES testAes128 = new AES(key128);
 		ubyte[] input128 = [0x32,0x43,0xf6,0xa8,0x88,0x5a,0x30,0x8d,0x31,0x31,0x98,0xa2,0xe0,0x37,0x07,0x34];
 		ubyte[] expectedEnd128 = [0x39,0x25,0x84,0x1d,0x02,0xdc,0x09,0xfb,0xdc,0x11,0x85,0x97,0x19,0x6a,0x0b,0x32];
 		ubyte[] end128 = testAes128.Cipher(input128);
@@ -570,7 +493,7 @@ class AES //this is not the full Rijndael algorithm. The full algorithm would ha
 		assert(dend128 == input128);
 		
 		ubyte[] key192 = [0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f,0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17];
-		Rijndael testAes192 = new Rijndael(key192);
+		AES testAes192 = new AES(key192);
 		ubyte[] input192 = [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee,0xff];
 		ubyte[] expectedEnd192 = [0xdd,0xa9,0x7c,0xa4,0x86,0x4c,0xdf,0xe0,0x6e,0xaf,0x70,0xa0,0xec,0x0d,0x71,0x91];
 		ubyte[] end192 = testAes192.Cipher(input192);
