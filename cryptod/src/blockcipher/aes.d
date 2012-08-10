@@ -46,48 +46,10 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 	struct word
 	{
 		ubyte[4] w;
-		
 		pure this (ubyte a, ubyte b, ubyte c, ubyte d)
 		{
 			w[0] = a; w[1] = b; w[2] = c; w[3] = d;
 		}
-		
-		pure this (ubyte[4] a)
-		{
-			w[0] = a[0]; w[1] = a[1]; w[2] = a[2]; w[3] = a[3];
-		}
-		
-		pure this (uint a)
-		{
-			w[3] = to!ubyte((a >> 24) & 0xFF) ;
-			w[2] = to!ubyte((a >> 16) & 0xFF) ;
-			w[1] = to!ubyte((a >> 8 ) & 0XFF) ;
-			w[0] = to!ubyte((a        & 0XFF));
-		}
-		
-		uint toInt()
-		{
-			uint x;
-			
-			for (ubyte i = 0; i < 4; i++)
-			{
-				x += this.w[i];
-				x = x << 8;
-			}
-				
-			return x;
-		}
-		
-		ubyte[] toUbyteArray()
-		{
-			ubyte[] ws;
-			ws ~= this.w[0];
-			ws ~= this.w[1];
-			ws ~= this.w[2];
-			ws ~= this.w[3];
-			return ws;
-		}
-		
 		word opBinary(string op)(word rhs)
 		{
 			static if (op == "^") 
@@ -98,39 +60,6 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 				wr.w[1] = this.w[1] ^ rhs.w[1];
 				wr.w[2] = this.w[2] ^ rhs.w[2];
 				wr.w[3] = this.w[3] ^ rhs.w[3];
-			
-				return wr;
-			}
-			static if (op == "|") 
-			{
-				word wr;
-				
-				wr.w[0] = this.w[0] | rhs.w[0];
-				wr.w[1] = this.w[1] | rhs.w[1];
-				wr.w[2] = this.w[2] | rhs.w[2];
-				wr.w[3] = this.w[3] | rhs.w[3];
-			
-				return wr;
-			}
-			static if (op == "&") 
-			{
-				word wr;
-				
-				wr.w[0] = this.w[0] & rhs.w[0];
-				wr.w[1] = this.w[1] & rhs.w[1];
-				wr.w[2] = this.w[2] & rhs.w[2];
-				wr.w[3] = this.w[3] & rhs.w[3];
-			
-				return wr;
-			}
-			static if (op == "+") 
-			{
-				word wr;
-				
-				uint x = toInt();
-				uint y = rhs.toInt();
-				
-				wr = word(x + y);
 			
 				return wr;
 			}
@@ -149,35 +78,7 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 				return wr;
 			}
 		}
-		word opBinary(string op)(uint n) 
-		{
-			static if (op == ">>") 
-			{
-				word wr;
-				
-				uint x = toInt();
-				
-				x = x >>> n;
-				
-				wr = word(x);
-				
-				return wr;
-			}
-			static if (op == "<<") 
-			{
-				word wr;
-				
-				uint x = toInt();
-				
-				x = x << n;
-				
-				wr = word(x);
-				
-				return wr;
-			}
-		}
 	}
-	
 	
 	immutable ubyte[] sBox = [0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
 					0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
