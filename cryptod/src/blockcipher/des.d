@@ -164,11 +164,11 @@ class DES : BlockCipher
 	}
 	
 	
-	pure ulong PC2(uint H)
+	pure uint PC2(ulong H)
 	{
-		ulong G = 0;
+		uint G = 0;
 		
-		for(uint i = 0; i < 48; i++)
+		for(uint i = 0; i < 32; i++)
 			G+=((H>>(PC2TABLE[i]-1))&0x1)<<(PC2TABLE[i]-1);
 		
 		return G;
@@ -180,7 +180,23 @@ class DES : BlockCipher
 		uint C = PC1L(cast(ulong)Key);
 		uint D = PC1R(cast(ulong)Key);
 		
-		//return 1;
+		for(uint i = 0; i < 16; i++)
+		{
+			uint n = (i == 0 || i == 1 || i == 8 || i == 15) ? 1 : 2;
+			C = leftShift(C,n);
+			D = leftShift(D,n);
+			ulong Kt = 0;
+			Kt = C;
+			Kt = Kt << 28;
+			Kt+= D;
+			K[i] = PC2(Kt);
+		}
+	}
+	
+	pure uint leftShift(uint x, uint n)
+	{
+		return ((x << n) | (x >> (32-n))) & 0b0000111111111111111111111111;
+
 	}
 	
 	pure uint f(uint R, uint n)
