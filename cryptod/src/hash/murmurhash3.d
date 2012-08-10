@@ -123,8 +123,6 @@ uint[4] murmurhash3_x86_128(ubyte[] key, uint seed)
 	uint c3 = 0x38b34ae5; 
 	uint c4 = 0xa1e38b93;
 
-	//----------
-	// body
 
 	const uint * blocks = cast(uint*)(data + nblocks*16);
 
@@ -151,9 +149,6 @@ uint[4] murmurhash3_x86_128(ubyte[] key, uint seed)
 
 		h4 = ROTL32(h4,13); h4 += h1; h4 = h4*5+0x32ac3b17;
 	}
-
-	//----------
-	// tail
 
 	const ubyte * tail = cast(ubyte*)(data + nblocks*16);
 
