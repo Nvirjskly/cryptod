@@ -298,18 +298,18 @@ class SHA1Context : HashContext
 	
 	unittest
 	{
-		SHA1_Context sha1test1 = new SHA1_Context();
+		SHA1Context sha1test1 = new SHA1Context();
 		ubyte[] input = [0x61, 0x62, 0x63];
 		sha1test1.AddToContext(input);
 		sha1test1.End();
 		assert(sha1test1.AsString() == "a9993e364706816aba3e25717850c26c9cd0d89d");
 		
-		SHA1_Context sha1test2 = new SHA1_Context();
+		SHA1Context sha1test2 = new SHA1Context();
 		sha1test2.AddToContext("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq");
 		sha1test2.End();
 		assert(sha1test2.AsString() == "84983e441c3bd26ebaae4aa1f95129e5e54670f1");
 		
-		SHA1_Context sha1test3 = new SHA1_Context();
+		SHA1Context sha1test3 = new SHA1Context();
 		
 		string millionA;
 		for(uint i = 0; i < 1000000; i++)

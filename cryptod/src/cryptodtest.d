@@ -5,6 +5,7 @@ import cryptod.blockcipher.aes;
 import cryptod.blockcipher.des;
 import cryptod.blockcipher.threefish;
 
+import cryptod.hash.murmurhash3;
 import cryptod.hash.sha1;
 
 void main()
@@ -73,5 +74,7 @@ void main()
 	
 	writeln(DESTest.Cipher(DESK));
 	
+	
+	writefln("%s",murmurhash3_32(cast(ubyte[])"a",42));
 }
 
