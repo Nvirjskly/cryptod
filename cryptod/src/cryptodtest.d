@@ -75,6 +75,6 @@ void main()
 	writeln(DESTest.Cipher(DESK));
 	
 	
-	writefln("%s",murmurhash3_32(cast(ubyte[])"a",42));
+	writefln("%s",murmurhash3_x86_32(cast(ubyte[])"a",42));
 }
 
