@@ -15,7 +15,7 @@ alias Rijndael!(4) AES;
 
 class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full algorithm would have a modifiable Nb...
 {
-	
+	private:
 	immutable ubyte[] sBox = [0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
 					0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
 					0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
@@ -175,16 +175,6 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 	//word[] w;
 	uint[] w;
 	
-	this(ubyte[] key)
-	{
-		if((key.length != 16) && (key.length != 24) && (key.length != 32))
-		{
-			throw new BadBlockSizeException("AES key size must be 16, 24, or 32 bytes.");
-		}
-		this.Nr = to!ubyte(key.length)/4 + 6;
-		this.Nk = to!ubyte(key.length)/4;
-		this.w = KeyExpansion(key);
-	}
 	
 	pure ubyte[4][4] SubBytes(ubyte[4][4] state) //WORKS
 	{
@@ -281,6 +271,109 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 		return statet;
 	}
 	
+	
+	
+	/*pure word[] KeyExpansion(ubyte[] key)
+	{
+		word[] v = new word[Nb * (Nr + 1)];
+		
+		for(ubyte i = 0; i < Nk; i++)
+		{
+			v[i] = word(key[4*i],key[4*i+1],key[4*i+2],key[4*i+3]);
+		}
+		
+		for (ubyte i = Nk; i < Nb * (Nr+1); i++)
+		{
+			word temp = v[i-1];
+			if(i % Nk == 0)
+				temp = SubWord(RotWord(temp)) ^ Rcon[i/Nk];
+			else if(Nk > 6 && i % Nk == 4)
+				temp = SubWord(temp);
+			v[i] = v[i-Nk] ^ temp;
+		}
+		return v;
+	}
+		
+	pure word SubWord(word s)
+	{
+		for(ubyte i = 0; i < 4; i++)
+			s.w[i] = sBox[s.w[i]];
+		return s;
+	}
+	
+	pure word RotWord(word s)
+	{
+		void swap(ubyte a, ubyte b)
+		{
+			s.w[a] = s.w[a] ^ s.w[b];
+			s.w[b] = s.w[a] ^ s.w[b];
+			s.w[a] = s.w[a] ^ s.w[b];
+		}
+		for (ubyte i = 0; i < 3; i++)
+		{
+			swap(i, to!ubyte(i+1));
+		}
+		return s;
+	}*/
+	
+	pure uint[] KeyExpansion(ubyte[] key)
+	{
+		uint[] v = new uint[Nb * (Nr + 1)];
+		
+		for(ubyte i = 0; i < Nk; i++)
+		{
+			v[i] = key[4*i] + (key[4*i+1] <<8) + (key[4*i+2] <<16) + (key[4*i+3] <<24);
+		}
+		
+		for (ubyte i = Nk; i < Nb * (Nr+1); i++)
+		{
+			uint temp = v[i-1];
+			if(i % Nk == 0)
+				temp = SubWord(RotWord(temp)) ^ Rcon[i/Nk];
+			else if(Nk > 6 && i % Nk == 4)
+				temp = SubWord(temp);
+			v[i] = v[i-Nk] ^ temp;
+		}
+		return v;
+	}
+		
+	pure uint SubWord(uint s)
+	{
+		ubyte[] sw = (cast(ubyte*)&s)[0..4];
+		for(ubyte i = 0; i < 4; i++)
+			sw[i] = sBox[sw[i]];
+		return sw[0]+sw[1]<<8+sw[2]<<16+sw[3]<<24;
+	}
+	
+	pure uint RotWord(uint s)
+	{
+		ubyte[] sw = (cast(ubyte*)&s)[0..4];
+		void swap(uint a, uint b)
+		{
+			sw[a] = sw[a] ^ sw[b];
+			sw[b] = sw[a] ^ sw[b];
+			sw[a] = sw[a] ^ sw[b];
+		}
+		for (uint i = 0; i < 3; i++)
+		{
+			swap(i, i+1);
+		}
+		return sw[0]+sw[1]<<8+sw[2]<<16+sw[3]<<24;
+	}
+	
+	public:
+	
+	this(ubyte[] key)
+	{
+		if((key.length != 16) && (key.length != 24) && (key.length != 32))
+		{
+			throw new BadBlockSizeException("AES key size must be 16, 24, or 32 bytes.");
+		}
+		this.Nr = to!ubyte(key.length)/4 + 6;
+		this.Nk = to!ubyte(key.length)/4;
+		this.w = KeyExpansion(key);
+	}
+	
 	ubyte[] InvCipher(ubyte[] inb)
 	{
 		ubyte state[4][4];
@@ -343,93 +436,6 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 		return outb;
 	}
 	
-	/*pure word[] KeyExpansion(ubyte[] key)
-	{
-		word[] v = new word[Nb * (Nr + 1)];
-		
-		for(ubyte i = 0; i < Nk; i++)
-		{
-			v[i] = word(key[4*i],key[4*i+1],key[4*i+2],key[4*i+3]);
-		}
-		
-		for (ubyte i = Nk; i < Nb * (Nr+1); i++)
-		{
-			word temp = v[i-1];
-			if(i % Nk == 0)
-				temp = SubWord(RotWord(temp)) ^ Rcon[i/Nk];
-			else if(Nk > 6 && i % Nk == 4)
-				temp = SubWord(temp);
-			v[i] = v[i-Nk] ^ temp;
-		}
-		return v;
-	}
-		
-	pure word SubWord(word s)
-	{
-		for(ubyte i = 0; i < 4; i++)
-			s.w[i] = sBox[s.w[i]];
-		return s;
-	}
-	
-	pure word RotWord(word s)
-	{
-		void swap(ubyte a, ubyte b)
-		{
-			s.w[a] = s.w[a] ^ s.w[b];
-			s.w[b] = s.w[a] ^ s.w[b];
-			s.w[a] = s.w[a] ^ s.w[b];
-		}
-		for (ubyte i = 0; i < 3; i++)
-		{
-			swap(i, to!ubyte(i+1));
-		}
-		return s;
-	}*/
-	
-	pure uint[] KeyExpansion(ubyte[] key)
-	{
-		uint[] v = new uint[Nb * (Nr + 1)];
-		
-		for(ubyte i = 0; i < Nk; i++)
-		{
-			v[i] = key[4*i] + (key[4*i+1] * 0x100) + (key[4*i+2] * 0x10000) + (key[4*i+3] * 0x1000000);
-		}
-		
-		for (ubyte i = Nk; i < Nb * (Nr+1); i++)
-		{
-			uint temp = v[i-1];
-			if(i % Nk == 0)
-				temp = SubWord(RotWord(temp)) ^ Rcon[i/Nk];
-			else if(Nk > 6 && i % Nk == 4)
-				temp = SubWord(temp);
-			v[i] = v[i-Nk] ^ temp;
-		}
-		return v;
-	}
-		
-	pure uint SubWord(uint s)
-	{
-		ubyte[] sw = (cast(ubyte*)&s)[0..4];
-		for(ubyte i = 0; i < 4; i++)
-			sw[i] = sBox[sw[i]];
-		return sw[0]+sw[1]*0x100+sw[2]*0x10000+sw[3]*0x1000000;
-	}
-	
-	pure uint RotWord(uint s)
-	{
-		ubyte[] sw = (cast(ubyte*)&s)[0..4];
-		void swap(uint a, uint b)
-		{
-			sw[a] = sw[a] ^ sw[b];
-			sw[b] = sw[a] ^ sw[b];
-			sw[a] = sw[a] ^ sw[b];
-		}
-		for (uint i = 0; i < 3; i++)
-		{
-			swap(i, i+1);
-		}
-		return sw[0]+sw[1]*0x100+sw[2]*0x10000+sw[3]*0x1000000;
-	}
 	
 	string toPlainText(ubyte[] inb)
 	{

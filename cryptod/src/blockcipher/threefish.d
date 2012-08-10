@@ -4,6 +4,7 @@ import cryptod.blockcipher.blockcipher;
 
 class Threefish : BlockCipher
 {
+	private:
 	immutable ulong[] R4  = [14,16,52,57,23,40,5,37,25,33,46,12,58,22,32,32];
 	immutable ulong[] R8  = [46,36,19,37,33,27,14,42,17,49,36,39,44,9,54,56,39,30,34,24,13,50,10,17,25,29,39,43,8,35,56,22];
 	immutable ulong[] R16 = [24,13,8,47,8,17,22,37,38,19,10,55,49,18,23,52,33,4,51,13,34,41,59,17,5,20,48,41,47,28,16,25,41,9,37,31,12,47,44,30,16,34,56,51,4,53,42,41,31,44,47,46,19,42,44,25,9,48,35,52,23,31,37,20];
@@ -19,6 +20,90 @@ class Threefish : BlockCipher
 	ulong[] ks;
 	uint Nw;
 	uint Nr;
+	
+	
+	
+	pure uint pi(uint i)
+	{
+		if (Nw == 4)
+			return pi4[i];
+		else if (Nw == 8)
+			return pi8[i];
+		else
+			return pi16[i];
+	}
+	
+	pure ulong[2] MIX(uint d, uint j, ulong x0, ulong x1)
+	{
+		ulong y0 = x0+x1;
+		ulong y1 = ROTL(x1,R(d%8,j))^y0;
+	
+		return [y0,y1];
+	}
+	
+	pure ulong[2] INVMIX(uint d, uint j, ulong y0, ulong y1)
+	{
+		ulong x1 = ROTR(y1^y0,R(d%8,j));
+		ulong x0 = y0-x1;
+	
+		return [x0,x1];
+	}
+	
+	pure ulong ROTL(ulong x, ulong n)
+	{
+		return (x << n) | (x >> (64-n));
+	}
+	
+	pure ulong ROTR(ulong x, ulong n)
+	{
+		return (x >> n) | (x << (64-n));
+	}
+	
+	pure ulong R(uint d, uint j)
+	{
+		if(Nw == 4)
+			return R4[2*d+j];
+		else if (Nw == 8)
+			return R8[4*d+j];
+		else
+			return R16[8*d+j];
+	}
+	
+	pure ulong[] BytesToWords(ubyte[] Z)
+	{
+		uint numWords = Z.length/8;
+		
+		ulong[] words = new ulong[numWords];
+			
+		for(uint i = 0; i < numWords; i++)
+		{
+			for(uint j = 0; j < 8; j++)
+			{
+				words[i] = words[i] << 8;
+				words[i] += Z[8*i+j];
+			}
+		}
+			
+		return words;
+	}
+	
+	pure ubyte[] WordsToBytes(ulong[] Z)
+	{
+		uint numBytes = Z.length * 8;
+		
+		ubyte[] bytes = new ubyte[numBytes];
+		
+		for(uint i = 0; i < Z.length; i++)
+		{
+			for(uint j = 0; j < 8; j++)
+			{
+				bytes[8*i+j] = (Z[i] >>> (8*(7-j))) & 0xFF;
+			}
+		}
+		return bytes;
+	}
+	
+	public:
 	
 	this(ubyte[] K, ubyte[16] T)
 	in
@@ -154,85 +239,7 @@ class Threefish : BlockCipher
 		return WordsToBytes(p);
 	}
 	
-	pure uint pi(uint i)
-	{
-		if (Nw == 4)
-			return pi4[i];
-		else if (Nw == 8)
-			return pi8[i];
-		else
-			return pi16[i];
-	}
 	
-	pure ulong[2] MIX(uint d, uint j, ulong x0, ulong x1)
-	{
-		ulong y0 = x0+x1;
-		ulong y1 = ROTL(x1,R(d%8,j))^y0;
-	
-		return [y0,y1];
-	}
-	
-	pure ulong[2] INVMIX(uint d, uint j, ulong y0, ulong y1)
-	{
-		ulong x1 = ROTR(y1^y0,R(d%8,j));
-		ulong x0 = y0-x1;
-	
-		return [x0,x1];
-	}
-	
-	pure ulong ROTL(ulong x, ulong n)
-	{
-		return (x << n) | (x >> (64-n));
-	}
-	
-	pure ulong ROTR(ulong x, ulong n)
-	{
-		return (x >> n) | (x << (64-n));
-	}
-	
-	pure ulong R(uint d, uint j)
-	{
-		if(Nw == 4)
-			return R4[2*d+j];
-		else if (Nw == 8)
-			return R8[4*d+j];
-		else
-			return R16[8*d+j];
-	}
-	
-	pure ulong[] BytesToWords(ubyte[] Z)
-	{
-		uint numWords = Z.length/8;
-		
-		ulong[] words = new ulong[numWords];
-			
-		for(uint i = 0; i < numWords; i++)
-		{
-			for(uint j = 0; j < 8; j++)
-			{
-				words[i] = words[i] << 8;
-				words[i] += Z[8*i+j];
-			}
-		}
-			
-		return words;
-	}
-	
-	pure ubyte[] WordsToBytes(ulong[] Z)
-	{
-		uint numBytes = Z.length * 8;
-		
-		ubyte[] bytes = new ubyte[numBytes];
-		
-		for(uint i = 0; i < Z.length; i++)
-		{
-			for(uint j = 0; j < 8; j++)
-			{
-				bytes[8*i+j] = (Z[i] >>> (8*(7-j))) & 0xFF;
-			}
-		}
-		return bytes;
-	}
 	
 	unittest
 	{
