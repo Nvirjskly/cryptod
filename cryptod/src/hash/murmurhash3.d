@@ -25,20 +25,25 @@
  *	DEALINGS IN THE SOFTWARE.
  */
 
-module cryptod.blockcipher.blockcipher;
+module cryptod.hash.murmurhash3;
 
-class BadBlockSizeException : Exception
+@safe pure uint ROTL32 (uint x, ubyte n)
 {
-	this(string msg)
-	{
-		super(msg);
-	}
+	return (x << n) | (x >> (32 - n));
 }
 
-interface BlockCipher
+
+uint murmurhash3_32(ubyte[] key, int len, uint seed)
 {
-	public:
+	uint output;
+	const int nblocks = len / 4;
+
+	uint h1 = seed;
 	
-	ubyte[] Cipher(ubyte[] P);
-	ubyte[] InvCipher(ubyte[] C);
+	uint c1 = 0xcc9e2d51;
+	uint c2 = 0x1b873593;
+
+	
+
+	return 1;
 }

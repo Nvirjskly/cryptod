@@ -2,6 +2,7 @@
 import std.stdio, std.conv, std.math, std.string, std.format, std.range;
 
 import cryptod.blockcipher.aes;
+import cryptod.blockcipher.des;
 import cryptod.blockcipher.threefish;
 
 import cryptod.hash.sha1;
@@ -20,7 +21,7 @@ void main()
 	writeln(cryp.DecryptToString(encData));
 	
 	
-	SHA1Context sha1test3 = new SHA1Context();
+	/*SHA1Context sha1test3 = new SHA1Context();
 	
 	string millionA;
 	for(uint i = 0; i < 1000000; i++)
@@ -35,7 +36,7 @@ void main()
 	SHA1Context sha1test2 = new SHA1Context();
 		sha1test2.AddToContext(millionA);
 		sha1test2.End();
-		writeln(sha1test2.AsString());
+		writeln(sha1test2.AsString());*/
 	
 	
 	
@@ -51,11 +52,9 @@ void main()
 	//ubyte[16] T = cryp.plainTextToBytes("tweak: 16 bytes ");
 	//ubyte[]   P =  cryp.plainTextToBytes("block of data,same length as key");
 	
-	ubyte[]   K = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+	/*ubyte[]   K = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	ubyte[16] T = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	ubyte[]   P =  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	
-	//ubyte[]   P =  [0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0];
 	
 	Threefish t = new Threefish(K,T);
 	
@@ -65,17 +64,14 @@ void main()
 	
 	writeln([0x94,0xEE,0xEA,0x8B,0x1F,0x2A,0xDA,0x84,0xAD,0xF1,0x03,0x31,0x3E,0xAE,0x66,0x70,0x95,0x24,0x19,0xA1,0xF4,0xB1,0x6D,0x53,0xD8,0x3F,0x13,0xE6,0x3C,0x9F,0x6B,0x11]);
 	
-	//writefln("%x",t.BytesToWords(enc)[0]);
 	
-	writeln(t.InvCipher(enc));
+	writeln(t.InvCipher(enc));*/
 	
-	//ubyte[] tt;
+	ubyte[] DESK = [0,0,0,0,0,0,0,0];
 	
-	//for(uint i = 0; i < 0xffffffffffffffff; i++)
-	//{
-	//	tt ~= 1;
-	//}
+	DES DESTest = new DES(DESK);
 	
+	writeln(DESTest.Cipher(DESK));
 	
 }
 
