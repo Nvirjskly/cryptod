@@ -43,6 +43,142 @@ alias Rijndael!(4) AES;
 class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full algorithm would have a modifiable Nb...
 {
 	private:
+	struct word
+	{
+		ubyte[4] w;
+		
+		pure this (ubyte a, ubyte b, ubyte c, ubyte d)
+		{
+			w[0] = a; w[1] = b; w[2] = c; w[3] = d;
+		}
+		
+		pure this (ubyte[4] a)
+		{
+			w[0] = a[0]; w[1] = a[1]; w[2] = a[2]; w[3] = a[3];
+		}
+		
+		pure this (uint a)
+		{
+			w[3] = to!ubyte((a >> 24) & 0xFF) ;
+			w[2] = to!ubyte((a >> 16) & 0xFF) ;
+			w[1] = to!ubyte((a >> 8 ) & 0XFF) ;
+			w[0] = to!ubyte((a        & 0XFF));
+		}
+		
+		uint toInt()
+		{
+			uint x;
+			
+			for (ubyte i = 0; i < 4; i++)
+			{
+				x += this.w[i];
+				x = x << 8;
+			}
+				
+			return x;
+		}
+		
+		ubyte[] toUbyteArray()
+		{
+			ubyte[] ws;
+			ws ~= this.w[0];
+			ws ~= this.w[1];
+			ws ~= this.w[2];
+			ws ~= this.w[3];
+			return ws;
+		}
+		
+		word opBinary(string op)(word rhs)
+		{
+			static if (op == "^") 
+			{
+				word wr;
+				
+				wr.w[0] = this.w[0] ^ rhs.w[0];
+				wr.w[1] = this.w[1] ^ rhs.w[1];
+				wr.w[2] = this.w[2] ^ rhs.w[2];
+				wr.w[3] = this.w[3] ^ rhs.w[3];
+			
+				return wr;
+			}
+			static if (op == "|") 
+			{
+				word wr;
+				
+				wr.w[0] = this.w[0] | rhs.w[0];
+				wr.w[1] = this.w[1] | rhs.w[1];
+				wr.w[2] = this.w[2] | rhs.w[2];
+				wr.w[3] = this.w[3] | rhs.w[3];
+			
+				return wr;
+			}
+			static if (op == "&") 
+			{
+				word wr;
+				
+				wr.w[0] = this.w[0] & rhs.w[0];
+				wr.w[1] = this.w[1] & rhs.w[1];
+				wr.w[2] = this.w[2] & rhs.w[2];
+				wr.w[3] = this.w[3] & rhs.w[3];
+			
+				return wr;
+			}
+			static if (op == "+") 
+			{
+				word wr;
+				
+				uint x = toInt();
+				uint y = rhs.toInt();
+				
+				wr = word(x + y);
+			
+				return wr;
+			}
+		}
+		word opBinary(string op)(ubyte rhs) 
+		{
+			static if (op == "^") 
+			{
+				word wr;
+				
+				wr.w[0] = this.w[0] ^ rhs;
+				wr.w[1] = this.w[1];
+				wr.w[2] = this.w[2];
+				wr.w[3] = this.w[3];
+			
+				return wr;
+			}
+		}
+		word opBinary(string op)(uint n) 
+		{
+			static if (op == ">>") 
+			{
+				word wr;
+				
+				uint x = toInt();
+				
+				x = x >>> n;
+				
+				wr = word(x);
+				
+				return wr;
+			}
+			static if (op == "<<") 
+			{
+				word wr;
+				
+				uint x = toInt();
+				
+				x = x << n;
+				
+				wr = word(x);
+				
+				return wr;
+			}
+		}
+	}
+	
+	
 	immutable ubyte[] sBox = [0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
 					0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
 					0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
@@ -199,8 +335,8 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 	//ubyte Nb = 4;
 	ubyte Nr;
 	ubyte Nk;
-	//word[] w;
-	uint[] w;
+	word[] w;
+	//uint[] w;
 	
 	
 	pure ubyte[4][4] SubBytes(ubyte[4][4] state) //WORKS
@@ -239,7 +375,7 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 		return statet;
 	}
 	
-	/*pure ubyte[4][4] AddRoundKey(ubyte[4][4] state, word[] v)
+	pure ubyte[4][4] AddRoundKey(ubyte[4][4] state, word[] v)
 	{		
 		for (int c = 0; c < Nb; c++)
 		{
@@ -249,8 +385,8 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 			}
 		}
 		return state;
-	}*/
-	pure ubyte[4][4] AddRoundKey(ubyte[4][4] state, uint[] v)
+	}
+	/*pure ubyte[4][4] AddRoundKey(ubyte[4][4] state, uint[] v)
 	{		
 		for (int c = 0; c < Nb; c++)
 		{
@@ -260,7 +396,7 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 			}
 		}
 		return state;
-	}
+	}*/
 	
 	pure ubyte[4][4] InvShiftRows(ubyte[4][4] state)
 	{
@@ -300,7 +436,7 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 	
 	
 	
-	/*pure word[] KeyExpansion(ubyte[] key)
+	pure word[] KeyExpansion(ubyte[] key)
 	{
 		word[] v = new word[Nb * (Nr + 1)];
 		
@@ -341,22 +477,25 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 			swap(i, to!ubyte(i+1));
 		}
 		return s;
-	}*/
+	}
 	
-	pure uint[] KeyExpansion(ubyte[] key)
+	/*uint[] KeyExpansion(ubyte[] key)
 	{
 		uint[] v = new uint[Nb * (Nr + 1)];
 		
 		for(ubyte i = 0; i < Nk; i++)
 		{
 			v[i] = key[4*i] + (key[4*i+1] <<8) + (key[4*i+2] <<16) + (key[4*i+3] <<24);
+			//v[i] = key[4*i]<<24 + (key[4*i+1] <<16) + (key[4*i+2] <<8) + (key[4*i+3] <<0);
 		}
 		
 		for (ubyte i = Nk; i < Nb * (Nr+1); i++)
 		{
 			uint temp = v[i-1];
 			if(i % Nk == 0)
-				temp = SubWord(RotWord(temp)) ^ Rcon[i/Nk];
+			{
+				temp = SubWord(RotWord(temp)) ^ (Rcon[i/Nk]<<24+Rcon[i/Nk]<<16+Rcon[i/Nk]<<8+Rcon[i/Nk]);
+			}	
 			else if(Nk > 6 && i % Nk == 4)
 				temp = SubWord(temp);
 			v[i] = v[i-Nk] ^ temp;
@@ -366,15 +505,20 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 		
 	pure uint SubWord(uint s)
 	{
-		ubyte[] sw = (cast(ubyte*)&s)[0..4];
+		//ubyte[] sw = (cast(ubyte*)&s)[0..4];
+		ubyte[] sw = [s &0xff,(s>>8)&0xff,(s>>16)&0xff,(s>>24)&0xff];
 		for(ubyte i = 0; i < 4; i++)
 			sw[i] = sBox[sw[i]];
 		return sw[0]+sw[1]<<8+sw[2]<<16+sw[3]<<24;
 	}
 	
-	pure uint RotWord(uint s)
+	uint RotWord(uint s)
 	{
-		ubyte[] sw = (cast(ubyte*)&s)[0..4];
+		//ubyte[] sw = (cast(ubyte*)&s)[0..4];
+		//writefln("%x",s);
+		//writefln("%(%x%)",sw);
+		ubyte[] sw = [s &0xff,(s>>8)&0xff,(s>>16)&0xff,(s>>24)&0xff];
+		//writeln(sw);
 		void swap(uint a, uint b)
 		{
 			sw[a] = sw[a] ^ sw[b];
@@ -386,7 +530,7 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 			swap(i, i+1);
 		}
 		return sw[0]+sw[1]<<8+sw[2]<<16+sw[3]<<24;
-	}
+	}*/
 	
 	public:
 	
@@ -524,6 +668,7 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 		ubyte[] input128 = [0x32,0x43,0xf6,0xa8,0x88,0x5a,0x30,0x8d,0x31,0x31,0x98,0xa2,0xe0,0x37,0x07,0x34];
 		ubyte[] expectedEnd128 = [0x39,0x25,0x84,0x1d,0x02,0xdc,0x09,0xfb,0xdc,0x11,0x85,0x97,0x19,0x6a,0x0b,0x32];
 		ubyte[] end128 = testAes128.Cipher(input128);
+		writeln(end128);
 		assert (end128 == expectedEnd128);
 		ubyte[] dend128 = testAes128.InvCipher(end128);
 		assert(dend128 == input128);
