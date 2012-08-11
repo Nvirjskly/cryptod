@@ -236,54 +236,6 @@ class Blowfish : BlockCipher
 		return cast(uint)((lsbox0[(xL>>24)&0xff] + lsbox1[(xL>>16)&0xff])^lsbox2[(xL>>8)&0xff])+lsbox3[(xL>>0)&0xff];
 	}
 	
-	uint[2] Cipher(uint[2] T)
-	{
-		uint xL = T[0];
-		uint xR = T[1];
-		
-		for(uint i = 0; i < 16; i++)
-		{
-			xL = xL ^ lP[i];
-			xR = F(xL) ^ xR;
-			
-			xL ^= xR;
-			xR ^= xL;
-			xL ^= xR;
-		}
-		xL ^= xR;
-		xR ^= xL;
-		xL ^= xR;
-		
-		xR = xR ^ lP[16];
-		xL = xL ^ lP[17];
-		
-		return [xL,xR];
-	}
-	
-	uint[2] InvCipher(uint[2] T)
-	{
-		uint xL = T[0];
-		uint xR = T[1];
-		
-		for(int i = 17; i > 1; i--)
-		{
-			xL = xL ^ lP[i];
-			xR = F(xL) ^ xR;
-			
-			xL ^= xR;
-			xR ^= xL;
-			xL ^= xR;
-		}
-		xL ^= xR;
-		xR ^= xL;
-		xL ^= xR;
-		
-		xR = xR ^ lP[1];
-		xL = xL ^ lP[0];
-		
-		return [xL,xR];
-	}
-	
 	public:
 	
 	this(ubyte[] Key)
@@ -356,6 +308,53 @@ class Blowfish : BlockCipher
 		xR = T2[1];
 		
 		return [(xL>>24)&0xff,(xL>>16)&0xff,(xL>>8)&0xff,(xL>>0)&0xff,(xR>>24)&0xff,(xR>>16)&0xff,(xR>>8)&0xff,(xR>>0)&0xff];
+	}
+		uint[2] Cipher(uint[2] T)
+	{
+		uint xL = T[0];
+		uint xR = T[1];
+		
+		for(uint i = 0; i < 16; i++)
+		{
+			xL = xL ^ lP[i];
+			xR = F(xL) ^ xR;
+			
+			xL ^= xR;
+			xR ^= xL;
+			xL ^= xR;
+		}
+		xL ^= xR;
+		xR ^= xL;
+		xL ^= xR;
+		
+		xR = xR ^ lP[16];
+		xL = xL ^ lP[17];
+		
+		return [xL,xR];
+	}
+	
+	uint[2] InvCipher(uint[2] T)
+	{
+		uint xL = T[0];
+		uint xR = T[1];
+		
+		for(int i = 17; i > 1; i--)
+		{
+			xL = xL ^ lP[i];
+			xR = F(xL) ^ xR;
+			
+			xL ^= xR;
+			xR ^= xL;
+			xL ^= xR;
+		}
+		xL ^= xR;
+		xR ^= xL;
+		xL ^= xR;
+		
+		xR = xR ^ lP[1];
+		xL = xL ^ lP[0];
+		
+		return [xL,xR];
 	}
 }
 

@@ -33,7 +33,7 @@ module cryptod.blockcipher.threefish;
 
 import cryptod.blockcipher.blockcipher;
 
-class Threefish : BlockCipher
+class Threefish
 {
 	private:
 	immutable ulong[] R4  = [14,16,52,57,23,40,5,37,25,33,46,12,58,22,32,32];
@@ -269,12 +269,11 @@ class Threefish : BlockCipher
 	}
 	
 	
-	
 	unittest
 	{
-		ubyte[]   K = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+		ubyte[32]   K = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 		ubyte[16] T = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-		ubyte[]   P = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+		ubyte[32]   P = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 		
 		auto tf1 = new Threefish(K,T);
 		

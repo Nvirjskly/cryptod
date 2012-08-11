@@ -106,6 +106,11 @@ class MersennseTwister
 		
 		return y;
 	}
+	
+	real getNextReal()
+	{
+	    return getNextInt()*(1.0L/4294967296.0L);
+	}
 }
 
 unittest
