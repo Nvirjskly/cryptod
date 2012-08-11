@@ -4,8 +4,6 @@
 
 module cryptod.hash.murmurhash3;
 
-import std.stdio;
-
 @safe pure static uint ROTL32 (uint x, ubyte n)
 {
 	return (x << n) | (x >> (32 - n));
@@ -49,12 +47,12 @@ unittest
 //So far this is taken verbatim from murmurhash3.cpp
 //D specific niceness (Templates and all) will come later.
 
-uint murmurhash3_x86_32(string key, uint seed)
+pure uint murmurhash3_x86_32(string key, uint seed)
 {
 	return murmurhash3_x86_32(cast(ubyte[])key, seed);
 }
 
-uint murmurhash3_x86_32(ubyte[] key, uint seed)
+pure uint murmurhash3_x86_32(ubyte[] key, uint seed)
 {
 	uint len = key.length;
 	const ubyte * data = key.ptr;
@@ -101,12 +99,12 @@ uint murmurhash3_x86_32(ubyte[] key, uint seed)
 	return h1;
 } 
 
-uint[4] murmurhash3_x86_128(string key, uint seed)
+pure uint[4] murmurhash3_x86_128(string key, uint seed)
 {
 	return murmurhash3_x86_128(cast(ubyte[])key, seed);
 }
 
-uint[4] murmurhash3_x86_128(ubyte[] key, uint seed)
+pure uint[4] murmurhash3_x86_128(ubyte[] key, uint seed)
 {
 	uint len = key.length;
 	const ubyte * data = key.ptr;
@@ -122,7 +120,6 @@ uint[4] murmurhash3_x86_128(ubyte[] key, uint seed)
 	uint c2 = 0xab0e9789;
 	uint c3 = 0x38b34ae5; 
 	uint c4 = 0xa1e38b93;
-
 
 	const uint * blocks = cast(uint*)(data + nblocks*16);
 
@@ -200,12 +197,12 @@ uint[4] murmurhash3_x86_128(ubyte[] key, uint seed)
 	return [h1,h2,h3,h4];
 }
 
-ulong[2] murmurhash3_x64_128(string key, uint seed)
+pure ulong[2] murmurhash3_x64_128(string key, uint seed)
 {
 	return murmurhash3_x64_128(cast(ubyte[])key, seed);
 }
 
-ulong[2] murmurhash3_x64_128 (ubyte[] key, uint seed)
+pure ulong[2] murmurhash3_x64_128 (ubyte[] key, uint seed)
 {
 	uint len = key.length;
 	const ubyte * data = cast(ubyte*)key;

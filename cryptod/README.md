@@ -5,3 +5,7 @@ TODO
 
 * Fix DES.
 
+* Fix Murmur
+
+* Add Benchmarks.
+
