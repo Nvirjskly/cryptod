@@ -13,3 +13,8 @@ Hashes
 ------
 
 Supports SHA1 and murmurhash3 so far.
+
+PRNGs
+-----
+
+Supports the Mersenne Twister so far.
