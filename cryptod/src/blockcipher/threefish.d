@@ -48,8 +48,6 @@ class Threefish : BlockCipher
 	uint Nw;
 	uint Nr;
 	
-	
-	
 	pure uint pi(uint i)
 	{
 		if (Nw == 4)

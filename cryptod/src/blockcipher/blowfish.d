@@ -34,8 +34,6 @@ module cryptod.blockcipher.blowfish;
 
 import cryptod.blockcipher.blockcipher;
 
-import std.stdio;
-
 class Blowfish : BlockCipher
 {
 	private:
@@ -232,7 +230,6 @@ class Blowfish : BlockCipher
 	uint[256] lsbox2;
 	uint[256] lsbox3;
 	uint[18] lP;
-	//uint[] P;
 	
 	uint F(uint xL)
 	{
@@ -259,6 +256,30 @@ class Blowfish : BlockCipher
 		
 		xR = xR ^ lP[16];
 		xL = xL ^ lP[17];
+		
+		return [xL,xR];
+	}
+	
+	uint[2] InvCipher(uint[2] T)
+	{
+		uint xL = T[0];
+		uint xR = T[1];
+		
+		for(int i = 17; i > 1; i--)
+		{
+			xL = xL ^ lP[i];
+			xR = F(xL) ^ xR;
+			
+			xL ^= xR;
+			xR ^= xL;
+			xL ^= xR;
+		}
+		xL ^= xR;
+		xR ^= xL;
+		xL ^= xR;
+		
+		xR = xR ^ lP[1];
+		xL = xL ^ lP[0];
 		
 		return [xL,xR];
 	}
@@ -326,12 +347,16 @@ class Blowfish : BlockCipher
 		
 		return [(xL>>24)&0xff,(xL>>16)&0xff,(xL>>8)&0xff,(xL>>0)&0xff,(xR>>24)&0xff,(xR>>16)&0xff,(xR>>8)&0xff,(xR>>0)&0xff];
 	}
-	ubyte[] InvCipher(ubyte[] C)
+	ubyte[] InvCipher(ubyte[] T)
 	{
-		return [];
+		uint xL = cast(uint)(T[3]+(T[2]<<8)+(T[1]<<16)+(T[0]<<24));
+		uint xR = cast(uint)(T[7]+(T[6]<<8)+(T[5]<<16)+(T[4]<<24));
+		uint[2] T2 = InvCipher([xL,xR]);
+		xL = T2[0];
+		xR = T2[1];
+		
+		return [(xL>>24)&0xff,(xL>>16)&0xff,(xL>>8)&0xff,(xL>>0)&0xff,(xR>>24)&0xff,(xR>>16)&0xff,(xR>>8)&0xff,(xR>>0)&0xff];
 	}
-	
-
 }
 
 unittest
@@ -375,6 +400,10 @@ unittest
 	for(uint i = 0; i < testVectors.length/3; i++)
 	{
 		Blowfish blow = new Blowfish(testVectors[3*i]);
-		assert(blow.Cipher(testVectors[3*i+1])==testVectors[3*i+2]);
+		ubyte[] enciphered = blow.Cipher(testVectors[3*i+1]);
+		assert(enciphered==testVectors[3*i+2]);
+		assert(blow.InvCipher(enciphered)==testVectors[3*i+1]);
 	}
+	import std.stdio;
+	writeln("Blowfish unittest passed.");
 }

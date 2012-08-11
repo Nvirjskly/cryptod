@@ -36,14 +36,6 @@ module cryptod.hash.murmurhash3;
   return k;
 }
 
-//Taken from official implementation
-unittest
-{
-	assert(murmurhash3_x86_32("abcde",42)==2933533680u);
-	assert(murmurhash3_x86_128("abcde",42)==[1480429215u,166782523u,3736068775u,3736068775u]);
-	assert(murmurhash3_x64_128("abcde",42)==[11577333987734259462u, 6620454430658148401u]);
-}
-
 //So far this is taken verbatim from murmurhash3.cpp
 //D specific niceness (Templates and all) will come later.
 
@@ -277,4 +269,12 @@ pure ulong[2] murmurhash3_x64_128 (ubyte[] key, uint seed)
 	h2 += h1;
 
 	return [h1,h2];
+}
+
+//Taken from official implementation
+unittest
+{
+	assert(murmurhash3_x86_32("abcde",42)==2933533680u);
+	assert(murmurhash3_x86_128("abcde",42)==[1480429215u,166782523u,3736068775u,3736068775u]);
+	assert(murmurhash3_x64_128("abcde",42)==[11577333987734259462u, 6620454430658148401u]);
 }
