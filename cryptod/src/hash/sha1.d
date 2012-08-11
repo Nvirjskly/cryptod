@@ -25,6 +25,10 @@
  *	DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
+ */
+
 module cryptod.hash.sha1;
 
 import std.string, std.format, std.array;
