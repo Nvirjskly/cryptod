@@ -233,14 +233,11 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 					0xc6,0x97,0x35,0x6a,0xd4,0xb3,0x7d,0xfa,0xef,0xc5,0x91,0x39,0x72,0xe4,0xd3,0xbd,
 					0x61,0xc2,0x9f,0x25,0x4a,0x94,0x33,0x66,0xcc,0x83,0x1d,0x3a,0x74,0xe8,0xcb,0x8d];
 			
-	//ubyte Nb = 4;
 	ubyte Nr;
 	ubyte Nk;
 	word[] w;
-	//uint[] w;
 	
-	
-	pure ubyte[4][4] SubBytes(ubyte[4][4] state) //WORKS
+	pure ubyte[4][4] SubBytes(ubyte[4][4] state)
 	{
 		for(uint i = 0; i < state.length; i++)
 			for(uint j = 0; j < state[i].length; j++)
@@ -287,17 +284,6 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 		}
 		return state;
 	}
-	/*pure ubyte[4][4] AddRoundKey(ubyte[4][4] state, uint[] v)
-	{		
-		for (int c = 0; c < Nb; c++)
-		{
-			for (int r; r < 4; r++)
-			{
-				state[r][c] = state[r][c] ^ ((v[c]>>(r*8))&0xFF);
-			}
-		}
-		return state;
-	}*/
 	
 	pure ubyte[4][4] InvShiftRows(ubyte[4][4] state)
 	{
@@ -379,59 +365,6 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 		}
 		return s;
 	}
-	
-	/*uint[] KeyExpansion(ubyte[] key)
-	{
-		uint[] v = new uint[Nb * (Nr + 1)];
-		
-		for(ubyte i = 0; i < Nk; i++)
-		{
-			v[i] = key[4*i] + (key[4*i+1] <<8) + (key[4*i+2] <<16) + (key[4*i+3] <<24);
-			//v[i] = key[4*i]<<24 + (key[4*i+1] <<16) + (key[4*i+2] <<8) + (key[4*i+3] <<0);
-		}
-		
-		for (ubyte i = Nk; i < Nb * (Nr+1); i++)
-		{
-			uint temp = v[i-1];
-			if(i % Nk == 0)
-			{
-				temp = SubWord(RotWord(temp)) ^ (Rcon[i/Nk]<<24+Rcon[i/Nk]<<16+Rcon[i/Nk]<<8+Rcon[i/Nk]);
-			}	
-			else if(Nk > 6 && i % Nk == 4)
-				temp = SubWord(temp);
-			v[i] = v[i-Nk] ^ temp;
-		}
-		return v;
-	}
-		
-	pure uint SubWord(uint s)
-	{
-		//ubyte[] sw = (cast(ubyte*)&s)[0..4];
-		ubyte[] sw = [s &0xff,(s>>8)&0xff,(s>>16)&0xff,(s>>24)&0xff];
-		for(ubyte i = 0; i < 4; i++)
-			sw[i] = sBox[sw[i]];
-		return sw[0]+sw[1]<<8+sw[2]<<16+sw[3]<<24;
-	}
-	
-	uint RotWord(uint s)
-	{
-		//ubyte[] sw = (cast(ubyte*)&s)[0..4];
-		//writefln("%x",s);
-		//writefln("%(%x%)",sw);
-		ubyte[] sw = [s &0xff,(s>>8)&0xff,(s>>16)&0xff,(s>>24)&0xff];
-		//writeln(sw);
-		void swap(uint a, uint b)
-		{
-			sw[a] = sw[a] ^ sw[b];
-			sw[b] = sw[a] ^ sw[b];
-			sw[a] = sw[a] ^ sw[b];
-		}
-		for (uint i = 0; i < 3; i++)
-		{
-			swap(i, i+1);
-		}
-		return sw[0]+sw[1]<<8+sw[2]<<16+sw[3]<<24;
-	}*/
 	
 	public:
 	
@@ -569,7 +502,6 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 		ubyte[] input128 = [0x32,0x43,0xf6,0xa8,0x88,0x5a,0x30,0x8d,0x31,0x31,0x98,0xa2,0xe0,0x37,0x07,0x34];
 		ubyte[] expectedEnd128 = [0x39,0x25,0x84,0x1d,0x02,0xdc,0x09,0xfb,0xdc,0x11,0x85,0x97,0x19,0x6a,0x0b,0x32];
 		ubyte[] end128 = testAes128.Cipher(input128);
-		writeln(end128);
 		assert (end128 == expectedEnd128);
 		ubyte[] dend128 = testAes128.InvCipher(end128);
 		assert(dend128 == input128);
