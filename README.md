@@ -4,6 +4,12 @@ Cryptod
 
 This is a simple Cryptography library written in D.
 
-It supports AES, and Threefish so far in terms of Ciphers.
+Ciphers
+-------
 
-In terms of Hashes it supports SHA1 and murmurhash3 so far.
+Supports AES, Blowfish, and Threefish so far.
+
+Hashes
+------
+
+Supports SHA1 and murmurhash3 so far.
