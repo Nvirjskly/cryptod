@@ -25,69 +25,62 @@
  *	DEALINGS IN THE SOFTWARE.
  */
 
-
 /**
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
 
-import cryptod.hash.murmurhash3;
+module cryptod.prng.mersennetwister;
 
-import cryptod.prng.mersennetwister;
-
-import std.datetime, std.stdio, std.random, std.conv;
-
-
-void benchmark_murmur3()
+class MersennseTwister
 {
-	string input = "";
-	
-	uint numtimes = 0x10000;
-	
-	uint strLen = 1024;
-	
-	for(uint i = 0; i < strLen; i++)
-		input ~= text(uniform(0,0xf));
-	
-	auto timer = StopWatch(AutoStart.yes);
-	
-	
-	
-	for(uint i = 0; i < numtimes; i++)
-	{
-		//murmurhash3_x86_32((cast(ubyte*)&i)[0..4],i);
-		murmurhash3_x86_32(input,i);
-	}
-	writefln("%s murmurhash3_x86_32 in %s milliseconds: %s MB/s", numtimes,timer.peek.msecs,((strLen*cast(float)numtimes)/(1024 * 1024))/((cast(float)timer.peek.msecs)/1000));
-	
-	
-	timer.reset();
-	
-	for(uint i = 0; i < numtimes; i++)
-	{
-		//murmurhash3_x86_128((cast(ubyte*)&i)[0..4],i);
-		murmurhash3_x86_128(input,i);
-	}
-	writefln("%s murmurhash3_x86_128 in %s milliseconds: %s MB/s", numtimes,timer.peek.msecs,((strLen*cast(float)numtimes)/(1024 * 1024))/((cast(float)timer.peek.msecs)/1000));
-	
-	timer.reset();
-	
-	for(uint i = 0; i < numtimes; i++)
-	{
-		//murmurhash3_x64_128((cast(ubyte*)&i)[0..4],i);
-		murmurhash3_x64_128(input,i);
-	}
-	writefln("%s murmurhash3_x64_128 in %s milliseconds: %s MB/s", numtimes,timer.peek.msecs,((strLen*cast(float)numtimes)/(1024 * 1024))/((cast(float)timer.peek.msecs)/1000));
-}
+	private:
+	const upperbit  = 0b10000000000000000000000000000000;
+	const lowerbits = 0b01111111111111111111111111111111;
 
-void main()
-{
-	benchmark_murmur3();
+	uint[624] MT;
+	short index = 0;
 	
-	MersennseTwister mt = new MersennseTwister(19);
-	for(uint i = 0; i < 20; i++)
+	void generate()
 	{
-		write(mt.getNextInt());
-		write(" ");
+		for(uint i = 0; i < 624; i++)
+		{
+			uint y = (MT[i]&upperbit) + (MT[(i+1)%624]&lowerbits);
+			MT[i] = MT[(i + 397)%624] ^ y>>1;
+			if(y % 2 == 1)
+			{
+				MT[i] = MT[i] ^ 0x9908b0df;
+			}
+		}
 	}
-	writeln();
+	
+	void init(uint seed)
+	{
+		MT[0] = seed;
+		for(uint i = 1; i < 624; i++)
+		{ 
+			MT[i] = 0x6c078965 * (MT[i-1] ^ (MT[i-1]>>30)) + i;
+		}
+	}
+	
+	public:
+	
+	this(uint seed) { init(seed); }
+	
+	this() { init(5489); }
+	
+	uint getNextInt()
+	{
+		if(index==0)
+			generate();
+			
+		uint y = MT[index];
+		y = y ^ (y>>11);
+		y = y ^ ((y<<7)&0x9d2c5680);
+		y = y ^ ((y<<15)&0xefc60000);
+		y = y ^ (y>>18);
+		
+		index = (index + 1)%624;
+		
+		return y;
+	}
 }

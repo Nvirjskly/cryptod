@@ -25,6 +25,10 @@
  *	DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
+ */
+
 module cryptod.blockcipher.threefish;
 
 import cryptod.blockcipher.blockcipher;

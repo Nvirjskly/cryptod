@@ -25,69 +25,22 @@
  *	DEALINGS IN THE SOFTWARE.
  */
 
-
 /**
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
 
-import cryptod.hash.murmurhash3;
+module cryptod.blockcipher.twofish;
 
-import cryptod.prng.mersennetwister;
+import cryptod.blockcipher.blockcipher;
 
-import std.datetime, std.stdio, std.random, std.conv;
-
-
-void benchmark_murmur3()
+class Blowfish : BlockCipher
 {
-	string input = "";
-	
-	uint numtimes = 0x10000;
-	
-	uint strLen = 1024;
-	
-	for(uint i = 0; i < strLen; i++)
-		input ~= text(uniform(0,0xf));
-	
-	auto timer = StopWatch(AutoStart.yes);
-	
-	
-	
-	for(uint i = 0; i < numtimes; i++)
+	ubyte[] Cipher(ubyte[] T)
 	{
-		//murmurhash3_x86_32((cast(ubyte*)&i)[0..4],i);
-		murmurhash3_x86_32(input,i);
+		return [];
 	}
-	writefln("%s murmurhash3_x86_32 in %s milliseconds: %s MB/s", numtimes,timer.peek.msecs,((strLen*cast(float)numtimes)/(1024 * 1024))/((cast(float)timer.peek.msecs)/1000));
-	
-	
-	timer.reset();
-	
-	for(uint i = 0; i < numtimes; i++)
+	ubyte[] InvCipher(ubyte[] T)
 	{
-		//murmurhash3_x86_128((cast(ubyte*)&i)[0..4],i);
-		murmurhash3_x86_128(input,i);
+		return [];
 	}
-	writefln("%s murmurhash3_x86_128 in %s milliseconds: %s MB/s", numtimes,timer.peek.msecs,((strLen*cast(float)numtimes)/(1024 * 1024))/((cast(float)timer.peek.msecs)/1000));
-	
-	timer.reset();
-	
-	for(uint i = 0; i < numtimes; i++)
-	{
-		//murmurhash3_x64_128((cast(ubyte*)&i)[0..4],i);
-		murmurhash3_x64_128(input,i);
-	}
-	writefln("%s murmurhash3_x64_128 in %s milliseconds: %s MB/s", numtimes,timer.peek.msecs,((strLen*cast(float)numtimes)/(1024 * 1024))/((cast(float)timer.peek.msecs)/1000));
-}
-
-void main()
-{
-	benchmark_murmur3();
-	
-	MersennseTwister mt = new MersennseTwister(19);
-	for(uint i = 0; i < 20; i++)
-	{
-		write(mt.getNextInt());
-		write(" ");
-	}
-	writeln();
 }
