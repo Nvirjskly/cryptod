@@ -35,6 +35,11 @@ import cryptod.primes.primes;
 
 import std.bigint; //Might want to implement a home-grown bigint class in order to not rely on std and maybe be faster.
 
+/**
+ * BBS input must be primes p, q and a number seed such that
+ * p = q = 3 mod 4 and p, q, and seed are coprime.
+ */
+
 class BlumBlumShub
 {
 	private:
