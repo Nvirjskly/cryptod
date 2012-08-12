@@ -133,7 +133,12 @@ void benchmark_bbs()
 {
 	uint numtimes = 0x100;
 	
-	BlumBlumShub bbs = new BlumBlumShub(rfc2412p1024,rfc5114p2048,BigInt(3));
+	string seedString = "";
+	
+	for(uint i = 0; i < 1024; i++)
+		seedString ~= uniform(0,0xf);
+	
+	BlumBlumShub bbs = new BlumBlumShub(rfc2412p1536,rfc5114p2048,BigInt(seedString));
 	
 	auto timer = StopWatch(AutoStart.yes);
 	
