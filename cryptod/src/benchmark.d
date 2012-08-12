@@ -44,6 +44,8 @@ import cryptod.prng.mersennetwister;
 
 import cryptod.prng.blumblumshub;
 
+import cryptod.primes.primes;
+
 import std.datetime, std.stdio, std.random, std.conv, std.bigint;
 
 
@@ -129,9 +131,9 @@ void benchmark_mersenne()
 
 void benchmark_bbs()
 {
-	uint numtimes = 0x1000;
+	uint numtimes = 0x100;
 	
-	BlumBlumShub bbs = new BlumBlumShub(BigInt(11),BigInt(19),BigInt(3));
+	BlumBlumShub bbs = new BlumBlumShub(rfc2412p1024,rfc5114p2048,BigInt(3));
 	
 	auto timer = StopWatch(AutoStart.yes);
 	
