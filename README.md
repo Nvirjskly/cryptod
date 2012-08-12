@@ -1,24 +1,31 @@
 Cryptod
 =======
 
-
 This is a simple Cryptography library written in D.
 
 Ciphers
 -------
 
-Supports AES, Blowfish, and Threefish so far.
+Block Ciphers:
+ * AES
+ * Blowfish
+ * Threefish
 
 Hashes
 ------
 
-Supports SHA1 and murmurhash3 so far.
+Context Hashes:
+ * SHA1
+ 
+'Fast' Hahses:
+ * murmurhash3
 
 PRNGs
 -----
-
-Supports the Mersenne Twister so far.
-
+ * Mersenne Twister
+ * BlumBlumShub
+ 
+More to come.
 
 Benchmarks
 ----------
