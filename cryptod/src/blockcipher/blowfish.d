@@ -289,6 +289,11 @@ class Blowfish : BlockCipher
 		}
 	}
 	
+	@property uint blockSize()
+	{
+		return 8;
+	}
+	
 	ubyte[] Cipher(ubyte[] T)
 	{
 		uint xL = cast(uint)(T[3]+(T[2]<<8)+(T[1]<<16)+(T[0]<<24));

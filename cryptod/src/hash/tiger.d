@@ -568,6 +568,12 @@ class TigerContext : HashContext
 	
 	ubyte[] S;
 	
+	union word64
+	{
+		ubyte* TT;
+		ulong* Tl;
+	}
+	
 	void save_abc()
 	{
 		aa = a;
@@ -575,23 +581,23 @@ class TigerContext : HashContext
 		cc = c;
 	}
 	
-	void pass(ref ulong a, ref ulong b, ref ulong c, ulong mul)
+	void pass(ref ulong a1, ref ulong b1, ref ulong c1, ulong mul)
 	{
-		round(a,b,c,x[0],mul);
-		round(b,c,a,x[1],mul);
-		round(c,a,b,x[2],mul);
-		round(a,b,c,x[3],mul);
-		round(b,c,a,x[4],mul);
-		round(c,a,b,x[5],mul);
-		round(a,b,c,x[6],mul);
-		round(b,c,a,x[7],mul);
+		round(a1,b1,c1,x[0],mul);
+		round(b1,c1,a1,x[1],mul);
+		round(c1,a1,b1,x[2],mul);
+		round(a1,b1,c1,x[3],mul);
+		round(b1,c1,a1,x[4],mul);
+		round(c1,a1,b1,x[5],mul);
+		round(a1,b1,c1,x[6],mul);
+		round(b1,c1,a1,x[7],mul);
 	}
-	void  round(ref ulong a, ref ulong b, ref ulong c, ref ulong x, ulong mul)
+	void  round(ref ulong a1, ref ulong b1, ref ulong c1, ulong x, ulong mul)
 	{
-		c ^= x ;
-		a -= table[(0*256)+(c>>(0*8))&0xff] ^ table[(1*256)+(c>>(2*8))&0xff] ^ table[(2*256)+(c>>(4*8))&0xff] ^ table[(3*256)+(c>>(6*8))&0xff] ;
-		b += table[(3*256)+(c>>(1*8))&0xff] ^ table[(2*256)+(c>>(3*8))&0xff] ^ table[(1*256)+(c>>(5*8))&0xff] ^ table[(0*256)+(c>>(7*8))&0xff] ;
-		b *= mul;
+		c1 ^= x ;
+		a1 -= table[(0*256)+(c>>(0*8))&0xff] ^ table[(1*256)+(c>>(2*8))&0xff] ^ table[(2*256)+(c>>(4*8))&0xff] ^ table[(3*256)+(c>>(6*8))&0xff] ;
+		b1 += table[(3*256)+(c>>(1*8))&0xff] ^ table[(2*256)+(c>>(3*8))&0xff] ^ table[(1*256)+(c>>(5*8))&0xff] ^ table[(0*256)+(c>>(7*8))&0xff] ;
+		b1 *= mul;
 	}
 	
 	void key_schedule()
@@ -623,8 +629,11 @@ class TigerContext : HashContext
 	
 	void compress()
 	{
+		import std.stdio;
 		save_abc();
+		//writeln(a);
 		pass(a,b,c,5L);
+		//writeln(a);
 		key_schedule();
 		pass(c,a,b,7L);
 		key_schedule();
@@ -637,33 +646,37 @@ class TigerContext : HashContext
 	this()
 	{
 		S = [];
+		x[] = [0,0,0,0,0,0,0,0];
 	}
 	
 	void AddToContext(ubyte[] T)
 	{
-		S ~= T;
-		ubyte[] H = S[0..S.length-(S.length%8)];
-		S = S[S.length-(S.length%8)..S.length];
+		import std.stdio;
+		ubyte[] Z = S.dup ~ T.dup;
+		//S ~= T.dup;
+		ubyte[] H = Z[0..(Z.length-(Z.length%64))].dup;
+		S = Z[Z.length-(Z.length%64)..Z.length].dup;
+		writeln(H);
+		writeln(S);
 		if(H.length > 0)
 		{
-			union word64
-			{
-				ubyte* TT;
-				ulong* Tl;
-			}
-			word64 TT;
-			TT.TT = T.ptr;
-			/*import std.stdio;
-			writefln("%x",TT.T[0]);
+			
+			/*writefln("%x",TT.T[0]);
 			writefln("%(%x %)",TT.Tl[0..T.length/8]);*/
 			
-			for(uint i = 0; i < T.length/8; i++)
+			writeln(H);
+			writeln(S);
+			
+			for(uint i = 0; i < H.length/8; i++)
 			{
 				for (uint j = 0; j < 8; j++)
-					x[j] = T[8*i+j];
-					
-				compress();	
+				{
+					x[i] <<= 8;
+					x[i] += H[8*i+(7-j)];
+					writeln(x);
+				}	
 			}
+			compress();	
 		}	
 	}
 	
@@ -680,10 +693,16 @@ class TigerContext : HashContext
 	
 	void End()
 	{
-		for(uint i = 0; i < S.length%8; i++)
-			S ~= 0;
-			
-		AddToContext(S);	
+		ubyte[] E = [];
+		for(uint i = 0; i < 64-S.length%64; i++)
+		{
+			if(i == 0)
+				E ~= 1;
+			else
+				E ~= 0;
+		}		
+		if(E.length != 0)	
+			AddToContext(E);	
 	}
 	
 	ubyte[] AsBytes()
@@ -704,9 +723,9 @@ class TigerContext : HashContext
 
 unittest
 {
-	TigerContext tc = new TigerContext();
-	tc.AddToContext("Tiger");
+	/*TigerContext tc = new TigerContext();
+	tc.AddToContext("abc");
 	tc.End();
 	import std.stdio;
-	writeln(tc.AsString());
+	writeln(tc.AsString());*/
 }

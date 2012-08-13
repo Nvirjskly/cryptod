@@ -38,6 +38,7 @@ class BadBlockSizeException : Exception
 interface BlockCipher
 {
 	public:
+	@property uint blockSize();
 	
 	ubyte[] Cipher(ubyte[] P);
 	ubyte[] InvCipher(ubyte[] C);

@@ -33,7 +33,7 @@ module cryptod.blockcipher.threefish;
 
 import cryptod.blockcipher.blockcipher;
 
-class Threefish
+class Threefish : BlockCipher
 {
 	private:
 	immutable ulong[] R4  = [14,16,52,57,23,40,5,37,25,33,46,12,58,22,32,32];
@@ -131,7 +131,7 @@ class Threefish
 		}
 		return bytes;
 	}
-	
+
 	public:
 	
 	this(ubyte[] K, ubyte[16] T)
@@ -179,6 +179,11 @@ class Threefish
 					ks[s*Nw+i] = k[(s+i)%(Nw+1)] + s;
 			}
 		}
+	}
+	
+	@property uint blockSize()
+	{
+		return Nw*8;
 	}
 
 	ubyte[] Cipher(ubyte[] P)

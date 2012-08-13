@@ -52,10 +52,51 @@ class CTRBlockCipher : PRNG
 	
 	uint getNextInt()
 	{
+		ubyte[] input = new ubyte[bc.blockSize];
 		
 		
+		
+		for(uint i = 0; i < bc.blockSize && i < 64; i++)
+		{
+			input[i] = (counter >> i) & 0xff;
+		}
+		
+		ubyte[] output = bc.Cipher(input);
+		
+		
+		uint a = 0;
+		
+		for(uint i = 0; i < 4 && i < bc.blockSize; i++)
+		{
+			a <<= 8;
+			a += output[i];
+		}
 		
 		counter++;
-		return 1;
+		return a;
 	}
+}
+
+unittest
+{
+	import cryptod.blockcipher.aes;
+	import std.stdio;
+	
+	AES a = new AES([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+	CTRBlockCipher ctbc = new CTRBlockCipher(a,1);
+	
+	import cryptod.tests.prngtest;
+	FrequencyTest ft = new FrequencyTest(ctbc);
+	
+	assert(ft.run());
+	
+	RunsTest rt = new RunsTest(ctbc);
+	
+	rt.run();
+	
+	writeln("Counter Mode BlockCipher unittest passed.");
+	
+//	for(uint i = 0; i < 100; i++)
+//		write(ctbc.getNextInt(), " ");
+//	writeln();	
 }
