@@ -39,4 +39,12 @@ interface PRNG
 	{
 	    return getNextInt()*(1.0L/4294967296.0L);
 	}
+	
+	final ulong getNextLong()
+	{
+		ulong l = getNextInt();
+		l <<= 32;
+		l += getNextInt();
+		return l;
+	}
 }

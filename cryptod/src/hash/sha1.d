@@ -35,6 +35,22 @@ import std.string, std.format, std.array;
 
 import cryptod.hash.hash;
 
+/**
+ * SHA1 function that uses the SHA1 context
+ */
+ubyte[] SHA1(string s)
+{
+	return SHA1(cast(ubyte[]) s);
+}
+
+ubyte[] SHA1(ubyte[] s)
+{
+	SHA1Context ct = new SHA1Context();
+	ct.AddToContext(s);
+	ct.End();
+	ubyte[] ret = ct.AsBytes();
+	return ret;
+}
 
 /**
  * The SHA1 hash according to specification;
@@ -233,8 +249,10 @@ class SHA1Context : HashContext
 	
 	this()
 	{
+		H = new uint[5];
 		H = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
 		buffl = 0;
+		buffer = [];
 	}
 	
 	void AddToContext(ubyte[] m)
@@ -284,7 +302,13 @@ class SHA1Context : HashContext
 	
 	ubyte[] AsBytes()
 	{
-		return WordsToBytes(H);
+		ubyte[] ret = [	(H[0]>>24) & 0xff, (H[0]>>16) & 0xff,(H[0]>>8) & 0xff,(H[0]>>0) & 0xff,
+						(H[1]>>24) & 0xff, (H[1]>>16) & 0xff,(H[1]>>8) & 0xff,(H[1]>>0) & 0xff,
+						(H[1]>>24) & 0xff, (H[2]>>16) & 0xff,(H[2]>>8) & 0xff,(H[2]>>0) & 0xff,
+						(H[1]>>24) & 0xff, (H[3]>>16) & 0xff,(H[3]>>8) & 0xff,(H[3]>>0) & 0xff,
+						(H[1]>>24) & 0xff, (H[4]>>16) & 0xff,(H[4]>>8) & 0xff,(H[4]>>0) & 0xff];
+		return ret;
+		//return WordsToBytes(H);
 	}
 	
 	ubyte[16] As128bitKey()

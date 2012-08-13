@@ -12,35 +12,41 @@ Block Ciphers:
  * Threefish
  * (BROKEN) DES
  
+Stream Ciphers:
+ * PRNG xor cipher (takes any deterministic prng as input.)
+ 
 Planned:
  * Assymetric Crypto
  * Twofish
  * Serpent
+ * Stream Ciphers
  
 Hashes
 ------
 
 Context Hashes:
  * SHA1
+ * (BROKEN) Tiger
  
 'Fast' Hashes: (these hashes are not suitable for cryptographic purposes.)
  * murmurhash3
  
 Planned:
  * SHA2 Family
- * All SHA3 finalists
- * More
+ * All SHA3 finalists (Skein &al)
+ * More fast hashes
 
 Pseudo Random Number Generators
 -------------------------------
  * Mersenne Twister
  * BlumBlumShub (Note: the design of the algorithms is suppossed to be slow and is great for heavy-duty crypto)
+ * Counter Mode Block Cipher PRNG (takes any block cipher as input.)
  
 
  
 Key Derivation Functions
 ------------------------
- * None so far
+ * PBKDF1 (might be broken, not sure, but that might be an obscure case of sha1)
  
 More to come.
 

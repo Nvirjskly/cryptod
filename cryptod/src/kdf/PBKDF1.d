@@ -25,80 +25,38 @@
  *	DEALINGS IN THE SOFTWARE.
  */
 
+
 /**
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
 
-module cryptod.prng.ctrblockcipher;
-
-import cryptod.blockcipher.blockcipher;
-
-import cryptod.prng.prng;
-
-/*
-NOTE: I first need to force every blockcipher to have a fixed block size before this is usable.
-*/
-
-
-class CTRBlockCipher : PRNG
+/**
+ * Example:
+ *    import cryptod.hash.sha1;
+ *	  import std.stdio;
+ *	  ubyte[] key = PBKDF1("password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 1000, 16, &SHA1);
+ *	  writefln("%(%02X%)",key);
+ */
+ubyte[] PBKDF1(string P, ubyte[8] S, uint C, uint kLen, ubyte[] function(ubyte[]) hash)
 {
-	BlockCipher bc;
-	ulong counter;
-	this(BlockCipher bc, ulong seed)
-	{
-		this.bc = bc;
-		counter = seed;
-	}
+	uint hLen = hash([]).length;
+	if(kLen > hLen)
+		throw new Exception("The key length must be less than or equal to the output of the hash.");
 	
-	uint getNextInt()
+	//P ~= S;
+	ubyte[] T = hash(cast(ubyte[])P ~ S);
+	for(uint i = 1; i < C; i++)
 	{
-		ubyte[] input = new ubyte[bc.blockSize];
-		
-		
-		
-		for(uint i = 0; i < bc.blockSize && i < 64; i++)
-		{
-			input[i] = (counter >> i) & 0xff;
-		}
-		
-		ubyte[] output = bc.Cipher(input);
-		
-		
-		uint a = 0;
-		
-		for(uint i = 0; i < 4 && i < bc.blockSize; i++)
-		{
-			a <<= 8;
-			a += output[i];
-		}
-		
-		counter++;
-		return a;
+		T = hash(T);
 	}
+	return T[0..kLen];
 }
 
 unittest
 {
-	import cryptod.blockcipher.aes;
+	import cryptod.hash.sha1;
 	import std.stdio;
-	import std.datetime;
 	
-	ulong t = Clock.currTime().stdTime();
-	
-	ubyte[] key = [(t&0xff),(t>>1)&0xff,(t>>2)&0xff,(t>>3)&0xff,(t>>4)&0xff,(t>>5)&0xff,(t>>6)&0xff,(t>>7)&0xff
-	,(t>81)&0xff,(t>>9)&0xff,(t>>10)&0xff,(t>>11)&0xff,(t>>12)&0xff,(t>>13)&0xff,(t>>14)&0xff,(t>>15)&0xff];
-	
-	AES a = new AES(key);
-	CTRBlockCipher ctbc = new CTRBlockCipher(a,1);
-	
-	import cryptod.tests.prngtest;
-	FrequencyTest ft = new FrequencyTest(ctbc);
-	
-	assert(ft.run());
-	
-	RunsTest rt = new RunsTest(ctbc);
-	
-	assert(rt.run());
-	
-	writeln("Counter Mode BlockCipher unittest passed.");
+	ubyte[] k = PBKDF1("password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 1000, 16, &SHA1);
+	writefln("%(%02X%)",k);
 }
