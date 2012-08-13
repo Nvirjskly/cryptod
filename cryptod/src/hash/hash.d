@@ -27,9 +27,12 @@
 
 module cryptod.hash.hash;
 
+import std.string, std.format, std.array;
+
 interface HashContext
 {
 	void AddToContext(ubyte[]);
+	void AddToContext(string m);
 	void End();
 	ubyte[] AsBytes();
 	string AsString();
