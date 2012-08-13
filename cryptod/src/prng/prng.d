@@ -29,82 +29,14 @@
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
 
-module cryptod.prng.blumblumshub;
+module cryptod.prng.prng;
 
-import cryptod.primes.primes;
-
-import cryptod.prng.prng;
-
-import std.bigint; //Might want to implement a home-grown bigint class in order to not rely on std and maybe be faster.
-
-/**
- * BBS input must be primes p, q and a number seed such that
- * p = q = 3 mod 4 and p, q, and seed are coprime.
- */
-
-class BlumBlumShub : PRNG
+interface PRNG
 {
-	private:
-	BigInt M;
-	BigInt xn;
-	BigInt one = BigInt(1);
-	BigInt two = BigInt(2);
-	BigInt modPow(BigInt x, BigInt e, BigInt m)
-	{
-		BigInt r = 1;
-		
-		while (e > 0)
-		{
-			if(e % two == one)
-			{
-				r = (r*x)%m;
-			}
-			e = e>>1;
-			x = (x*x)%m;
-		}
-		return r;
-	}
-	void nextxn()
-	{
-		xn = modPow(xn,two,M);
-	}
+	uint getNextInt();
 	
-	public:
-	
-	this()
+	final real getNextReal()
 	{
-		M = rfc2412p1536 * rfc5114p2048;
-		xn = rfc2412p768;
+	    return getNextInt()*(1.0L/4294967296.0L);
 	}
-	
-	this(BigInt p, BigInt q, BigInt seed)
-	in
-	{
-		if(p % 4 != 3 || q % 4 != 3)
-		{
-			throw new Exception("p and q must be congruent to 3 mod 4");
-		}
-		if(seed % p == 0 || seed % q == 0)
-		{
-			throw new Exception("the seed must be coprime with p and q");
-		}
-	}
-	body
-	{
-		M = p*q;
-		xn = seed;
-	}
-	
-	uint getNextInt()
-	{
-		uint r = 0;
-		for(uint i = 0; i < 32; i++)
-		{
-			r <<= 1;
-			r += (xn % two).toInt();
-			nextxn();
-		}
-		return r;
-	}
-	
-}	
+}

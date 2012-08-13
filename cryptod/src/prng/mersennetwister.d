@@ -31,7 +31,9 @@
 
 module cryptod.prng.mersennetwister;
 
-class MersennseTwister
+import cryptod.prng.prng;
+
+class MersenneTwister : PRNG
 {
 	private:
 	const upperbit  = 0b10000000000000000000000000000000;
@@ -105,11 +107,6 @@ class MersennseTwister
 		index = (index + 1)%624;
 		
 		return y;
-	}
-	
-	real getNextReal()
-	{
-	    return getNextInt()*(1.0L/4294967296.0L);
 	}
 }
 
@@ -318,7 +315,7 @@ unittest
 	2643151863, 3896204135, 2416995901, 1397735321, 3460025646];
 	
 	
-	MersennseTwister mt = new MersennseTwister([0x123, 0x234, 0x345, 0x456]);
+	MersenneTwister mt = new MersenneTwister([0x123, 0x234, 0x345, 0x456]);
 	for(uint i = 0; i < 1000; i++)
 	{
 		assert(testVectors[i] == mt.getNextInt());

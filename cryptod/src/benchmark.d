@@ -119,7 +119,7 @@ void benchmark_mersenne()
 {
 	uint numtimes = 0x1000000;
 	
-	MersennseTwister mt = new MersennseTwister([0x123, 0x234, 0x345, 0x456]);
+	MersenneTwister mt = new MersenneTwister([0x123, 0x234, 0x345, 0x456]);
 	
 	auto timer = StopWatch(AutoStart.yes);
 	

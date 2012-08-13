@@ -29,82 +29,33 @@
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
 
-module cryptod.prng.blumblumshub;
+module cryptod.prng.ctrblockcipher;
 
-import cryptod.primes.primes;
+import cryptod.blockcipher.blockcipher;
 
 import cryptod.prng.prng;
 
-import std.bigint; //Might want to implement a home-grown bigint class in order to not rely on std and maybe be faster.
+/*
+NOTE: I first need to force every blockcipher to have a fixed block size before this is usable.
+*/
 
-/**
- * BBS input must be primes p, q and a number seed such that
- * p = q = 3 mod 4 and p, q, and seed are coprime.
- */
 
-class BlumBlumShub : PRNG
+class CTRBlockCipher : PRNG
 {
-	private:
-	BigInt M;
-	BigInt xn;
-	BigInt one = BigInt(1);
-	BigInt two = BigInt(2);
-	BigInt modPow(BigInt x, BigInt e, BigInt m)
+	BlockCipher bc;
+	ulong counter;
+	this(BlockCipher bc, ulong seed)
 	{
-		BigInt r = 1;
-		
-		while (e > 0)
-		{
-			if(e % two == one)
-			{
-				r = (r*x)%m;
-			}
-			e = e>>1;
-			x = (x*x)%m;
-		}
-		return r;
-	}
-	void nextxn()
-	{
-		xn = modPow(xn,two,M);
-	}
-	
-	public:
-	
-	this()
-	{
-		M = rfc2412p1536 * rfc5114p2048;
-		xn = rfc2412p768;
-	}
-	
-	this(BigInt p, BigInt q, BigInt seed)
-	in
-	{
-		if(p % 4 != 3 || q % 4 != 3)
-		{
-			throw new Exception("p and q must be congruent to 3 mod 4");
-		}
-		if(seed % p == 0 || seed % q == 0)
-		{
-			throw new Exception("the seed must be coprime with p and q");
-		}
-	}
-	body
-	{
-		M = p*q;
-		xn = seed;
+		this.bc = bc;
+		counter = seed;
 	}
 	
 	uint getNextInt()
 	{
-		uint r = 0;
-		for(uint i = 0; i < 32; i++)
-		{
-			r <<= 1;
-			r += (xn % two).toInt();
-			nextxn();
-		}
-		return r;
+		
+		
+		
+		counter++;
+		return 1;
 	}
-	
-}	
+}

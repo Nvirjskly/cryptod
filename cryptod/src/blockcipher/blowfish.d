@@ -231,7 +231,7 @@ class Blowfish : BlockCipher
 	uint[256] lsbox3;
 	uint[18] lP;
 	
-	uint F(uint xL)
+	pure uint F(uint xL)
 	{
 		return cast(uint)((lsbox0[(xL>>24)&0xff] + lsbox1[(xL>>16)&0xff])^lsbox2[(xL>>8)&0xff])+lsbox3[(xL>>0)&0xff];
 	}
@@ -240,10 +240,10 @@ class Blowfish : BlockCipher
 	
 	this(ubyte[] Key)
 	{
-		lsbox0[] = cast(uint[])sbox0;
-		lsbox1[] = cast(uint[])sbox1;
-		lsbox2[] = cast(uint[])sbox2;
-		lsbox3[] = cast(uint[])sbox3;
+		lsbox0[] = sbox0.dup;
+		lsbox1[] = sbox1.dup;
+		lsbox2[] = sbox2.dup;
+		lsbox3[] = sbox3.dup;
 		lP[] = cast(uint[])P;
 		
 		this.Key = Key;
@@ -309,7 +309,7 @@ class Blowfish : BlockCipher
 		
 		return [(xL>>24)&0xff,(xL>>16)&0xff,(xL>>8)&0xff,(xL>>0)&0xff,(xR>>24)&0xff,(xR>>16)&0xff,(xR>>8)&0xff,(xR>>0)&0xff];
 	}
-		uint[2] Cipher(uint[2] T)
+	uint[2] Cipher(uint[2] T)
 	{
 		uint xL = T[0];
 		uint xR = T[1];
@@ -360,6 +360,7 @@ class Blowfish : BlockCipher
 
 unittest
 {
+	/*Official Test Vectors*/
 	ubyte[][] testVectors = [
 	[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00],        [0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00],        [0x4E,0xF9,0x97,0x45,0x61,0x98,0xDD,0x78],
 	[0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF],        [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF],        [0x51,0x86,0x6F,0xD5,0xB8,0x5E,0xCB,0x8A],
@@ -403,6 +404,26 @@ unittest
 		assert(enciphered==testVectors[3*i+2]);
 		assert(blow.InvCipher(enciphered)==testVectors[3*i+1]);
 	}
+	
+	/*Generate random tests*/
+	import cryptod.prng.mersennetwister;
+	import std.datetime;
+	
+	MersenneTwister mt = new MersenneTwister(Clock.currStdTime()&0xffffffff);
+	for(uint i = 0; i < 100; i++)
+	{
+		ubyte[] key = [mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff];
+			
+		Blowfish blow = new Blowfish(key);
+		
+		for(uint j = 0; j < 1000; j++)
+		{
+			ubyte[] input = [mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff,mt.getNextInt()&0xff];
+			assert(blow.InvCipher(blow.Cipher(input)) == input);
+			
+		}
+	}
+	
 	import std.stdio;
 	writeln("Blowfish unittest passed.");
 }

@@ -83,6 +83,10 @@ class SkeinContext : HashContext
 	{
 		
 	}
+	void AddToContext(string m)
+	{
+		
+	}
 	void End()
 	{
 	
