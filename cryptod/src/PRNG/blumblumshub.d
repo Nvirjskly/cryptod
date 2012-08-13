@@ -37,14 +37,18 @@ import cryptod.prng.prng;
 
 import std.bigint; //Might want to implement a home-grown bigint class in order to not rely on std and maybe be faster.
 
-/**
- * BBS input must be primes p, q and a number seed such that
- * p = q = 3 mod 4 and p, q, and seed are coprime.
- */
 
+/// The type of bit output to use.
+enum BIT_TYPE { EVEN, ODD , LEAST };
+
+/**
+ * The BlumBlumShub Pseudo random number generator.
+ * 
+ */
 class BlumBlumShub : PRNG
 {
 	private:
+	BIT_TYPE T;
 	BigInt M;
 	BigInt xn;
 	BigInt one = BigInt(1);
@@ -69,13 +73,34 @@ class BlumBlumShub : PRNG
 		xn = modPow(xn,two,M);
 	}
 	
+	uint getBit()
+	{
+		if(T == BIT_TYPE.LEAST)
+			return (xn % two).toInt();
+		else if(T == BIT_TYPE.ODD)
+		{
+			
+		}	
+		assert(0);	
+	}
+	
 	public:
 	
+	/**
+	 * Sets p to rfc2412p1536, q to rfc5114p2048
+	 * and the initial seed to rfc2412p768.
+	 */
 	this()
 	{
 		M = rfc2412p1536 * rfc5114p2048;
 		xn = rfc2412p768;
+		T = BIT_TYPE.LEAST;
 	}
+	
+	/**
+	 * Takes two BigInt prime numbers, p and q as input such that p = q = 3 mod 4
+	 * and takes a BigInt initial seed.
+	 */
 	
 	this(BigInt p, BigInt q, BigInt seed)
 	in
@@ -93,18 +118,35 @@ class BlumBlumShub : PRNG
 	{
 		M = p*q;
 		xn = seed;
+		T = BIT_TYPE.LEAST;
 	}
 	
+	/**
+	 * Sets the bit type to use.
+	 * BIT_TYPE.ODD is the odd bit parity
+	 * BIT_TYPE.EVEN is the even bit parity
+	 * BIT_TYPE.LEAST is the least significant bit and is default.
+	 * NOT IMPLEMENTED YET.
+	 */
+	void setBitType(BIT_TYPE T)
+	{
+		this.T = T;
+	}
+	
+	/**
+	 * Gets the next integer from the computation 
+	 * (note: each integer needs to run 32 rounds of the function
+	 * making it exteremly computationaly expensive.)
+	 */
 	uint getNextInt()
 	{
 		uint r = 0;
 		for(uint i = 0; i < 32; i++)
 		{
 			r <<= 1;
-			r += (xn % two).toInt();
+			r += getBit();
 			nextxn();
 		}
 		return r;
 	}
-	
 }	

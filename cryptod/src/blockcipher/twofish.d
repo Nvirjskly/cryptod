@@ -39,11 +39,11 @@ class Twofish : BlockCipher
 	{
 		return 0;
 	}
-	ubyte[] Cipher(ubyte[] T)
+	ubyte[] Cipher(ubyte[] P)
 	{
 		return [];
 	}
-	ubyte[] InvCipher(ubyte[] T)
+	ubyte[] InvCipher(ubyte[] C)
 	{
 		return [];
 	}

@@ -48,7 +48,7 @@ interface Test
 
 class FrequencyTest : Test //This is both the monobits test and the block test.
 {
-	const numTimes = 0xfffff;
+	const numTimes = 0xffff;
 	const errorMargin = 0.05f;
 	uint blockSize = 4096;
 	PRNG p;
@@ -246,12 +246,8 @@ class RunsTest : Test
 		
 		double Z = (runs - expectedValue) / sqrt(variance);
 		
-		
-		//double mean = (2f*(cast(double)negativeRuns)*(cast(double)positiveRuns))/(cast(double)runs)+1f;
-		
 		double p = normalCDF(1f-abs(Z));
 		
 		return p>errorMargin;
-		//return mean < errorMargin;
 	}
 }
