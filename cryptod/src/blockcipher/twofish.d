@@ -33,8 +33,12 @@ module cryptod.blockcipher.twofish;
 
 import cryptod.blockcipher.blockcipher;
 
-class Blowfish : BlockCipher
+class Twofish : BlockCipher
 {
+	@property uint blockSize()
+	{
+		return 0;
+	}
 	ubyte[] Cipher(ubyte[] T)
 	{
 		return [];

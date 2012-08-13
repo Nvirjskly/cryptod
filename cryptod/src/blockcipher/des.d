@@ -275,6 +275,11 @@ class DES : BlockCipher
 		writeln("got here");
 	}
 	
+	@property uint blockSize()
+	{
+		return 8;
+	}
+	
 	ubyte[] Cipher(ubyte[] T)
 	in
 	{

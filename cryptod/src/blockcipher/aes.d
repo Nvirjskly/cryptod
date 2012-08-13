@@ -40,7 +40,7 @@ import cryptod.blockcipher.blockcipher;
 
 alias Rijndael!(4) AES;
 
-class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full algorithm would have a modifiable Nb...
+class Rijndael(ubyte Nb) : BlockCipher//this is not the full Rijndael algorithm. The full algorithm would have a modifiable Nb...
 {
 	private:
 	struct word
@@ -377,6 +377,10 @@ class Rijndael(ubyte Nb) //this is not the full Rijndael algorithm. The full alg
 		this.Nr = to!ubyte(key.length)/4 + 6;
 		this.Nk = to!ubyte(key.length)/4;
 		this.w = KeyExpansion(key);
+	}
+	@property uint blockSize()
+	{
+		return 16;
 	}
 	
 	ubyte[] InvCipher(ubyte[] inb)

@@ -320,6 +320,15 @@ unittest
 	{
 		assert(testVectors[i] == mt.getNextInt());
 	}
+	import cryptod.tests.prngtest;
+	FrequencyTest ft = new FrequencyTest(mt);
+	
+	assert(ft.run());
+	
+	RunsTest rt = new RunsTest(mt);
+	
+	rt.run();
+	
 	import std.stdio;
 	writeln("Mersenne Twister unittest passed.");
 }
