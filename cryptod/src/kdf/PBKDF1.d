@@ -30,12 +30,16 @@
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
 
+module cryptod.kdf.pbkdf1;
+
 /**
  * Example:
- *    import cryptod.hash.sha1;
- *	  import std.stdio;
- *	  ubyte[] key = PBKDF1("password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 1000, 16, &SHA1);
- *	  writefln("%(%02X%)",key);
+ * ----
+ * import cryptod.hash.sha1;
+ * import std.stdio;
+ * ubyte[] key = PBKDF1("password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 1000, 16, &SHA1);
+ * writefln("%(%02X%)",key);
+ *	  ----
  */
 ubyte[] PBKDF1(string P, ubyte[8] S, uint C, uint kLen, ubyte[] function(ubyte[]) hash)
 {
