@@ -27,19 +27,30 @@
 
 module cryptod.blockcipher.blockcipher;
 
+/**
+ * All block ciphers have a set of common functionality
+ * let B be a block cipher, and let P be some plaintext
+ * where P.length == B.blockSize 
+ * 
+ * Let C = B.Cipher(P) , then P == B.InvCipher(C)
+ */
+interface BlockCipher
+{
+	public:
+	///
+	@property uint blockSize();
+	
+	///
+	ubyte[] Cipher(ubyte[] P);
+	///
+	ubyte[] InvCipher(ubyte[] C);
+}
+
+///This error is returned when you input a P of an infavourable blocksize.
 class BadBlockSizeException : Exception
 {
 	this(string msg)
 	{
 		super(msg);
 	}
-}
-
-interface BlockCipher
-{
-	public:
-	@property uint blockSize();
-	
-	ubyte[] Cipher(ubyte[] P);
-	ubyte[] InvCipher(ubyte[] C);
 }
