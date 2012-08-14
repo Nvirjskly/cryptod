@@ -16,15 +16,17 @@ Let's start with a practical example:
 	ulong t = Clock.currTime().stdTime();
 	
 	//makes a seed from the current time
-	uint[] seed = [(t&0xffff),(t>>1)&0xffff,(t>>2)&0xffff,(t>>3)&0xffff,(t>>4)&0xffff,(t>>5)&0xffff,(t>>6)&0xffff,(t>>7)&0xffff
-	,(t>>8)&0xffff,(t>>9)&0xffff,(t>>10)&0xffff,(t>>11)&0xffff,(t>>12)&0xffff,(t>>13)&0xffff,(t>>14)&0xffff,(t>>15)&0xffff];
+	uint[] seed = [(t&0xffff),(t>>1)&0xffff,(t>>2)&0xffff,(t>>3)&0xffff,(t>>4)&0xffff,
+	(t>>5)&0xffff,(t>>6)&0xffff,(t>>7)&0xffff,(t>>8)&0xffff,(t>>9)&0xffff,(t>>10)&0xffff,
+	(t>>11)&0xffff,(t>>12)&0xffff,(t>>13)&0xffff,(t>>14)&0xffff,(t>>15)&0xffff];
 	
 	//seeds a MersenneTwister
 	MersenneTwister mt = new MersenneTwister(seed);
 	
 	//Generates a random salt (ideally this would be stored in a database after generating.
-	ubyte[] salt = [(mt.getNextInt()&0xff),(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,
-	(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff];
+	ubyte[] salt = [(mt.getNextInt()&0xff),(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,
+	(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,
+	(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff];
 	
 	//This constructs an hmac out of a sha1 function.
 	alias hmac!(SHA1ub) HMAC_SHA1; 
