@@ -39,14 +39,13 @@ Planned:
 Pseudo Random Number Generators
 -------------------------------
  * Mersenne Twister
- * BlumBlumShub (Note: the design of the algorithms is suppossed to be slow and is great for heavy-duty crypto)
+ * BlumBlumShub (Note: the design of the algorithm is suppossed to be slow and is great for heavy-duty crypto)
  * Counter Mode Block Cipher PRNG (takes any block cipher as input.)
- 
-
  
 Key Derivation Functions
 ------------------------
  * PBKDF1 (might be broken, not sure, but that might be an obscure case of sha1)
+ * PBKDF2 (might be broken, not sure, but that might be an obscure case of sha1)
  
 More to come.
 
