@@ -3,6 +3,35 @@ Cryptod
 
 This is a simple Cryptography library written in D.
 
+Let's start with a practical example:
+
+<pre>
+	import cryptod.blockcipher.aes;
+	import cryptod.prf.hmac;
+	import cryptod.hash.sha1;
+	import cryptod.kdf.pbkdf2;
+	
+	//This constructs an hmac out of a sha1 function.
+	alias hmac!(SHA1ub) HMAC_SHA1; 
+	
+	//This generates a 128-bit key from the password "password" using a 10,000 iteration PBKDF2 function.
+	ubyte[] key = PBKDF2(&HMAC_SHA1, "password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 10000, 16); 
+	
+	//Creates a new AES context for the generated key.
+	AES aes = new AES(key);
+	
+	//converts a 16 byte input to a ubyte array
+	ubyte[] input = cast(ubyte[])"A 16-byte input.";
+	
+	//Enciphers the input
+	ubyte[] enciphered = aes.Cipher(input);
+	
+	//Deciphers the enciphered output
+	ubyte[] deciphered = aes.InvCipher(enciphered);
+	
+	assert(input == deciphered);
+</pre>
+
 Ciphers
 -------
 

@@ -194,6 +194,25 @@ void benchmark_aes()
 
 void main()
 {
+	import cryptod.blockcipher.aes;
+	import cryptod.prf.hmac;
+	import cryptod.hash.sha1;
+	import cryptod.kdf.pbkdf2;
+	
+	alias hmac!(SHA1ub) HMAC_SHA1;
+	
+	ubyte[] key = PBKDF2(&HMAC_SHA1, "password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 10000, 16);
+	
+	AES aes = new AES(key);
+	
+	ubyte[] input = cast(ubyte[])"A 16-byte input.";
+	
+	ubyte[] enciphered = aes.Cipher(input);
+	
+	ubyte[] deciphered = aes.InvCipher(enciphered);
+	
+	assert(input == deciphered);
+	
 	benchmark_murmur3();
 	benchmark_sha1();
 	benchmark_mersenne();
@@ -201,6 +220,4 @@ void main()
 	benchmark_blowfish();
 	benchmark_threefish();
 	benchmark_aes();
-	
-	
 }
