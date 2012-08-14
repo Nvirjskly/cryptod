@@ -595,8 +595,8 @@ class TigerContext : HashContext
 	void  round(ref ulong a1, ref ulong b1, ref ulong c1, ulong x, ulong mul)
 	{
 		c1 ^= x ;
-		a1 -= table[(0*256)+(c>>(0*8))&0xff] ^ table[(1*256)+(c>>(2*8))&0xff] ^ table[(2*256)+(c>>(4*8))&0xff] ^ table[(3*256)+(c>>(6*8))&0xff] ;
-		b1 += table[(3*256)+(c>>(1*8))&0xff] ^ table[(2*256)+(c>>(3*8))&0xff] ^ table[(1*256)+(c>>(5*8))&0xff] ^ table[(0*256)+(c>>(7*8))&0xff] ;
+		a1 -= table[(0*256)+(c1>>(0*8))&0xff] ^ table[(1*256)+(c1>>(2*8))&0xff] ^ table[(2*256)+(c1>>(4*8))&0xff] ^ table[(3*256)+(c1>>(6*8))&0xff] ;
+		b1 += table[(3*256)+(c1>>(1*8))&0xff] ^ table[(2*256)+(c1>>(3*8))&0xff] ^ table[(1*256)+(c1>>(5*8))&0xff] ^ table[(0*256)+(c1>>(7*8))&0xff] ;
 		b1 *= mul;
 	}
 	
@@ -629,7 +629,7 @@ class TigerContext : HashContext
 	
 	void compress()
 	{
-		import std.stdio;
+		//import std.stdio;
 		save_abc();
 		//writeln(a);
 		pass(a,b,c,5L);
@@ -656,38 +656,33 @@ class TigerContext : HashContext
 		//S ~= T.dup;
 		ubyte[] H = Z[0..(Z.length-(Z.length%64))].dup;
 		S = Z[Z.length-(Z.length%64)..Z.length].dup;
-		writeln(H);
-		writeln(S);
+		//writeln(H);
+		//writeln(S);
 		if(H.length > 0)
 		{
 			
 			/*writefln("%x",TT.T[0]);
 			writefln("%(%x %)",TT.Tl[0..T.length/8]);*/
 			
-			writeln(H);
-			writeln(S);
+			//writeln(H);
+			//writeln(S);
 			
 			for(uint i = 0; i < H.length/8; i++)
 			{
 				for (uint j = 0; j < 8; j++)
 				{
 					x[i] <<= 8;
-					x[i] += H[8*i+(7-j)];
-					writeln(x);
+					x[i] += H[8*i+j];
+					//writeln(x);
 				}	
+				compress();
 			}
-			compress();	
+			//compress();	
 		}	
 	}
 	
 	void AddToContext(string m)
-	{
-		/*immutable char * c = toStringz(m);
-		ubyte[] b;
-		
-		for (uint i = 0; c[i] != '\0'; i++)
-			b ~= cast(ubyte)(c[i]);*/
-		
+	{	
 		AddToContext(cast(ubyte[])m);
 	}
 	
@@ -697,7 +692,7 @@ class TigerContext : HashContext
 		for(uint i = 0; i < 64-S.length%64; i++)
 		{
 			if(i == 0)
-				E ~= 1;
+				E ~= 0x80;
 			else
 				E ~= 0;
 		}		
@@ -723,9 +718,9 @@ class TigerContext : HashContext
 
 unittest
 {
-	/*TigerContext tc = new TigerContext();
+	TigerContext tc = new TigerContext();
 	tc.AddToContext("abc");
 	tc.End();
 	import std.stdio;
-	writeln(tc.AsString());*/
+	writeln(tc.AsString());
 }
