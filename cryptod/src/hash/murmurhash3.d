@@ -3,7 +3,7 @@
 //This is a copy of the code written in C++ by Austin Appleby
 
 module cryptod.hash.murmurhash3;
-
+private:
 @safe pure static uint ROTL32 (uint x, ubyte n)
 {
 	return (x << n) | (x >> (32 - n));
@@ -35,6 +35,8 @@ module cryptod.hash.murmurhash3;
 
   return k;
 }
+
+public:
 
 //So far this is taken verbatim from murmurhash3.cpp
 //D specific niceness (Templates and all) will come later.

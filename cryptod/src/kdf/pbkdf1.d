@@ -40,6 +40,8 @@ module cryptod.kdf.pbkdf1;
  * ubyte[] key = PBKDF1("password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 1000, 16, &SHA1);
  * writefln("%(%02X%)",key);
  * ----
+ *
+ * Note: PBKDF1 is not secure, and is not suitable for cryptographic purposes.
  */
 ubyte[] PBKDF1(string P, ubyte[8] S, uint C, uint kLen, ubyte[] function(ubyte[]) hash)
 {
@@ -47,11 +49,11 @@ ubyte[] PBKDF1(string P, ubyte[8] S, uint C, uint kLen, ubyte[] function(ubyte[]
 	if(kLen > hLen)
 		throw new Exception("The key length must be less than or equal to the output of the hash.");
 	
-	ubyte[] T = hash(cast(ubyte[])P ~ S);
+	ubyte[] T = new ubyte[hLen];
+	T = hash(cast(ubyte[])P ~ S);
 	for(uint i = 1; i < C; i++)
-	{
 		T = hash(T);
-	}
+	
 	return T[0..kLen];
 }
 
