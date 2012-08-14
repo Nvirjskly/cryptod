@@ -30,65 +30,28 @@
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
 
-module cryptod.kdf.pbkdf2;
-
-import std.math;
+module cryptod.prf.hmac;
 
 /**
- * Example:
- * ----
- * import cryptod.prf.hmac;
- * import cryptod.hash.sha1;
- * import std.stdio;
- * 
- * alias hmac!(SHA1ub) HMAC_SHA1;
- * 
- * ubyte[] key = PBKDF2(&HMAC_SHA1, "password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 1000, 16);
- * 
- * writefln("%(%02x%)",key);
- * ----
+ * HMAC
  */
-ubyte[] PBKDF2(ubyte[] function(ubyte[],ubyte[]) PRF, string P, ubyte[] S, uint c, uint dkLen)
+ubyte[] hmac(alias hash)(ubyte[] key, ubyte[] message)
 {
-	uint hLen = PRF([],[]).length;
-	uint l = cast(uint)ceil((cast(float)dkLen)/(cast(float)hLen));
-	uint r = dkLen - (l - 1) * hLen;
+	uint blocksize = hash([]).length;
+	if(key.length > blocksize)
+		key = hash(key);
+	if(key.length < blocksize)
+		for(uint i = 0; i < (blocksize - key.length); i++)
+			key ~= [0x00];
+			
+	ubyte[] o_key_pad = new ubyte[key.length];	
+	ubyte[] i_key_pad = new ubyte[key.length];	
 	
-	ubyte[] F(ubyte[] PP, ubyte[] SS, uint cc, uint ii)
+	for(uint i = 0; i < key.length; i++)
 	{
-		SS ~= [(ii>>24)&0xff,(ii>>16)&0xff,(ii>>8)&0xff,(ii>>0)&0xff];
-		ubyte[] U = PRF(PP,SS);
-		for(uint j = 1; j < cc; j++)
-		{
-			ubyte[] NU = PRF(PP,U);
-			for(uint k = 0; k < NU.length; k++)
-				U[k] ^= NU[k];
-		}
-		return U;
-	}
-	ubyte T[][] = new ubyte[][l];
-	for(uint i = 0; i < T.length; i++)
-	{
-		T[i] = F(cast(ubyte[])P,S,c,i+1);
-	}
-	ubyte[] TT = T[0];
-	for(uint i = 1; i < T.length; i++)
-	{
-		TT ~= T[i];
+		o_key_pad[i] = 0x57 ^ key[i];
+		i_key_pad[i] = 0x36 ^ key[i];
 	}
 	
-	return TT[0..r];
-}
-
-unittest
-{
-	import cryptod.prf.hmac;
-	import cryptod.hash.sha1;
-	import std.stdio;
-	
-	alias hmac!(SHA1ub) HMAC_SHA1;
-	
-	ubyte[] key = PBKDF2(&HMAC_SHA1, "password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 1000, 16);
-	
-	writefln("%(%02x%)",key);
+	return hash(o_key_pad ~ hash(i_key_pad ~ message));
 }

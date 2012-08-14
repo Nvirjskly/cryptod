@@ -36,14 +36,16 @@ import std.string, std.format, std.array;
 import cryptod.hash.hash;
 
 /**
- * SHA1 function that uses the SHA1 context
+ * SHA1 function that uses the SHA1 context and takes a simple string argument.
  */
-ubyte[] SHA1(string s)
+ubyte[] SHA1s(string s)
 {
-	return SHA1(cast(ubyte[]) s);
+	return SHA1ub(cast(ubyte[]) s);
 }
-
-ubyte[] SHA1(ubyte[] s)
+/**
+ * SHA1 function that uses the SHA1 context and takes a simple ubyte[] argument.
+ */
+ubyte[] SHA1ub(ubyte[] s)
 {
 	SHA1Context ct = new SHA1Context();
 	ct.AddToContext(s);
