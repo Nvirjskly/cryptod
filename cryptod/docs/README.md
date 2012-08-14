@@ -5,12 +5,12 @@ Cryptod is organised into several parts by functionality. Some parts are indepen
 
 Block Ciphers
 ------------
-<a href="blockcipher/blockcipher.md">Block Cipher interface. All Block Ciphers have this functionality.</a>
+<a href="docs/blockcipher/blockcipher.md">Block Cipher interface. All Block Ciphers have this functionality.</a>
 
 Hashes
 ------
-<a href="hash/sha1.md">SHA1 Hash context and functions.</a>
+<a href="docs/hash/sha1.md">SHA1 Hash context and functions.</a>
 
 Key Derivation Functions
 ------------------------
-<a href="kdf/pbkdf2.md">Password-based Key Derivation Function 2</a>
+<a href="docs/kdf/pbkdf2.md">Password-based Key Derivation Function 2</a>
