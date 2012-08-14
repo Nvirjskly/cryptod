@@ -66,18 +66,12 @@ ubyte[] PBKDF2(ubyte[] function(ubyte[],ubyte[]) PRF, string P, ubyte[] S, uint 
 		}
 		return U;
 	}
-	ubyte T[][] = new ubyte[][l];
-	for(uint i = 0; i < T.length; i++)
-	{
-		T[i] = F(cast(ubyte[])P,S,c,i+1);
-	}
-	ubyte[] TT = T[0];
-	for(uint i = 1; i < T.length; i++)
-	{
-		TT ~= T[i];
-	}
 	
-	return TT[0..r];
+	ubyte[] T = [];
+	for(uint i = 0; i < l; i++)
+		T ~= F(cast(ubyte[])P,S,c,i+1);
+	
+	return T[0..r];
 }
 
 unittest
