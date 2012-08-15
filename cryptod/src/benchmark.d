@@ -40,6 +40,8 @@ import cryptod.hash.murmurhash3;
 
 import cryptod.hash.sha1;
 
+import cryptod.hash.md2;
+
 import cryptod.prng.mersennetwister;
 
 import cryptod.prng.blumblumshub;
@@ -113,6 +115,30 @@ void benchmark_sha1()
 	shc.End();
 	
 	writefln("%s sha1 in %s milliseconds: %s MB/s", numtimes,timer.peek.msecs,((strLen*cast(float)numtimes)/(1024 * 1024))/((cast(float)timer.peek.msecs)/1000));
+}
+
+void benchmark_md2()
+{
+	auto md2 = new MD2Context();
+	
+	string input = "";
+	
+	uint numtimes = 0x1000;
+	
+	uint strLen = 1024;
+	
+	for(uint i = 0; i < strLen; i++)
+		input ~= text(uniform(0,0xf));
+	
+	auto timer = StopWatch(AutoStart.yes);
+	
+	for(uint i = 0; i<numtimes; i++)
+	{
+		md2.AddToContext(input);
+	}	
+	md2.End();
+	
+	writefln("%s md2 in %s milliseconds: %s MB/s", numtimes,timer.peek.msecs,((strLen*cast(float)numtimes)/(1024 * 1024))/((cast(float)timer.peek.msecs)/1000));
 }
 
 void benchmark_mersenne()
@@ -235,6 +261,7 @@ void main()
 	assert(input == deciphered);
 	
 	benchmark_murmur3();
+	benchmark_md2();
 	benchmark_sha1();
 	benchmark_mersenne();
 	benchmark_bbs();
