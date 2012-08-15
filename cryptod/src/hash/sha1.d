@@ -271,16 +271,8 @@ class SHA1Context : HashContext
 	}
 	
 	void AddToContext(string m)
-	{
-		immutable char * c = toStringz(m);
-		ubyte[] b;
-		
-		for (uint i = 0; c[i] != '\0'; i++)
-			b ~= cast(ubyte)(c[i]);
-			
-		//writeln(b);
-		
-		AddToContext(b);
+	{		
+		AddToContext(cast(ubyte[])m);
 	}
 	
 	void End()
