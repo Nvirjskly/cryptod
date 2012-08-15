@@ -35,11 +35,34 @@ import std.string, std.format, std.array;
 
 import cryptod.hash.hash;
 
-class MD2Context
+/**
+ * MD2 function that uses the SHA1 context and takes a simple string argument.
+ */
+ubyte[] MD2s(string s)
+{
+	return MD2ub(cast(ubyte[]) s);
+}
+/**
+ * MD2 function that uses the SHA1 context and takes a simple ubyte[] argument.
+ */
+ubyte[] MD2ub(ubyte[] s)
+{
+	MD2Context md0 = new MD2Context();
+	md0.AddToContext(s);
+	md0.End();
+	ubyte[] ret = md0.AsBytes();
+	return ret;
+}
+
+/**
+ * The MD2 hash according to specification;
+ * Takes a byte array and converts it into a 128-bit hash.
+ */
+class MD2Context : HashContext
 {
 	private:
 	
-	immutable ubyte[256] sbox = [
+	immutable ubyte[256] S = [
 	0x29, 0x2E, 0x43, 0xC9, 0xA2, 0xD8, 0x7C, 0x01, 0x3D, 0x36, 0x54, 0xA1, 0xEC, 0xF0, 0x06, 0x13, 
 	0x62, 0xA7, 0x05, 0xF3, 0xC0, 0xC7, 0x73, 0x8C, 0x98, 0x93, 0x2B, 0xD9, 0xBC, 0x4C, 0x82, 0xCA, 
 	0x1E, 0x9B, 0x57, 0x3C, 0xFD, 0xD4, 0xE0, 0x16, 0x67, 0x42, 0x6F, 0x18, 0x8A, 0x17, 0xE5, 0x12, 
@@ -58,31 +81,126 @@ class MD2Context
 	0x31, 0x44, 0x50, 0xB4, 0x8F, 0xED, 0x1F, 0x1A, 0xDB, 0x99, 0x8D, 0x33, 0x9F, 0x11, 0x83, 0x14];
 	
 	ubyte[] M;
+	ubyte[16] C; //Checksum
+	ubyte[48] X;
+	bool end;
+	ubyte L;
 	
-	void padMessage()
+	void PadMessage()
 	{
-		for(ubyte i = 0; i < (16-(M.length%16)); i++)
-			M ~= i;
+		ubyte pad = 16-M.length%16;
+		for(ubyte i = 0; i == 0 || (M.length%16 != 0); i++)
+			M ~= pad;
+	}
+	
+	void AddToChecksum(ubyte[] H)
+	{
+		for (uint i = 0; i < H.length/16; i++)
+		{
+			L = C[15];
+			for (uint j = 0; j < 16; j++)
+			{
+				ubyte c = H[i*16+j];
+				C[j] = C[j] ^ S[c ^ L];
+				L = C[j];
+			}
+		}
+	}
+	
+	void AppendChecksum()
+	{
+		M ~= C;
+	}
+	
+	void AddToHash(ubyte[] H)
+	{
+		if(H.length > 0)
+		{
+			if(!end)
+				AddToChecksum(H);
+			for (uint i = 0; i < H.length/16; i++)
+			{
+				for(uint j = 0; j < 16; j++)
+				{
+					X[16+j] = H[i*16+j];
+					X[32+j] = X[16+j] ^ X[j];
+				}
+				uint t = 0;
+				for(uint j = 0; j < 18; j++)
+				{
+					for(uint k = 0; k < 48; k++)
+					{
+						X[k] ^= S[t];
+						t = X[k];
+					}
+					t = (t+j)&0xff;
+				}
+			}
+		}
 	}
 	
 	public:
 	
-	ubyte[] AddToContext(ubyte[] m)
+	this()
+	{
+		for(uint i = 0; i < 16; i++)
+			C[i] = 0;
+			
+		M = [];	
+		
+		for(uint i = 0; i < 48; i++)
+			X[i] = 0;
+			
+		end = false;	
+		L = 0;
+	}
+	
+	void AddToContext(ubyte[] m)
 	{
 		ubyte[] Z = M.dup ~ m.dup;
-		//S ~= T.dup;
 		ubyte[] H = Z[0..(Z.length-(Z.length%16))].dup;
 		M = Z[Z.length-(Z.length%16)..Z.length].dup;
 		
 		if(H.length > 0)
-		{
-			
-		}
-		
-		return [];
+			AddToHash(H);
 	}
+	
+	void AddToContext(string m)
+	{		
+		AddToContext(cast(ubyte[])m);
+	}
+	
+	void End()
+	{
+		PadMessage();
+		AddToChecksum(M);
+		AppendChecksum();
+		end = true;
+		AddToHash(M);
+	}
+	ubyte[] AsBytes()
+	{
+		return X[0..16];
+	}
+	string AsString()
+	{
+		auto writer = appender!string();
+		formattedWrite(writer, "%(%02x%)",X[0..16]);
+		return writer.data;
+	}	
 }
 unittest
 {
+	import std.stdio;
+	MD2Context md0 = new MD2Context();
+	md0.AddToContext(cast(ubyte[])"");
+	md0.End();
+	assert(md0.AsString() == "8350e5a3e24c153df2275c9f80692773");
+	
 	MD2Context md = new MD2Context();
+	md.AddToContext(cast(ubyte[])"12345678901234567890123456789012345678901234567890123456789012345678901234567890");
+	md.End();
+	assert(md.AsString() == "d5976f79d83d3a0dc9806c3c66f3efd8");
+	
+	writeln("MD2 unittest passed.");
 }
