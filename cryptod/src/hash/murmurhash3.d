@@ -14,26 +14,22 @@ private:
   return (x << r) | (x >> (64 - r));
 }
 
-@safe pure uint fmix32(uint h)
+@safe pure void fmix32(ref uint h)
 {
 	h ^= h >> 16;
 	h *= 0x85ebca6b;
 	h ^= h >> 13;
 	h *= 0xc2b2ae35;
 	h ^= h >> 16;
-
-  return h;
 }
 
-@safe pure ulong fmix64 ( ulong k )
+@safe pure void fmix64 ( ref ulong k )
 {
   k ^= k >> 33;
   k *= 0xff51afd7ed558ccd;
   k ^= k >> 33;
   k *= 0xc4ceb9fe1a85ec53;
   k ^= k >> 33;
-
-  return k;
 }
 
 public:
@@ -88,7 +84,7 @@ pure uint murmurhash3_x86_32(ubyte[] key, uint seed)
 
 	h1 ^= len;
 
-	h1 = fmix32(h1);
+	fmix32(h1);
 
 	return h1;
 } 
@@ -180,10 +176,10 @@ pure uint[4] murmurhash3_x86_128(ubyte[] key, uint seed)
 	h1 += h2; h1 += h3; h1 += h4;
 	h2 += h1; h3 += h1; h4 += h1;
 
-	h1 = fmix32(h1);
-	h2 = fmix32(h2);
-	h3 = fmix32(h3);
-	h4 = fmix32(h4);
+	fmix32(h1);
+	fmix32(h2);
+	fmix32(h3);
+	fmix32(h4);
 
 	h1 += h2; h1 += h3; h1 += h4;
 	h2 += h1; h3 += h1; h4 += h1;
@@ -209,9 +205,6 @@ pure ulong[2] murmurhash3_x64_128 (ubyte[] key, uint seed)
 	ulong c1 = 0x87c37b91114253d5;
 	ulong c2 = 0x4cf5ad432745937f;
 
-	//----------
-	// body
-
 	const ulong * blocks = cast(ulong*)(data);
 
 	for(i = 0; i < nblocks; i++)
@@ -227,9 +220,6 @@ pure ulong[2] murmurhash3_x64_128 (ubyte[] key, uint seed)
 
 		h2 = ROTL64(h2,31); h2 += h1; h2 = h2*5+0x38495ab5;
 	}
-
-	//----------
-	// tail
 
 	const ubyte * tail = cast(ubyte*)(data + nblocks*16);
 
@@ -264,8 +254,8 @@ pure ulong[2] murmurhash3_x64_128 (ubyte[] key, uint seed)
 	h1 += h2;
 	h2 += h1;
 
-	h1 = fmix64(h1);
-	h2 = fmix64(h2);
+	fmix64(h1);
+	fmix64(h2);
 
 	h1 += h2;
 	h2 += h1;
