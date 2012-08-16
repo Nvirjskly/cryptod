@@ -80,17 +80,28 @@ class MD2Context : HashContext
 	0xF2, 0xEF, 0xB7, 0x0E, 0x66, 0x58, 0xD0, 0xE4, 0xA6, 0x77, 0x72, 0xF8, 0xEB, 0x75, 0x4B, 0x0A, 
 	0x31, 0x44, 0x50, 0xB4, 0x8F, 0xED, 0x1F, 0x1A, 0xDB, 0x99, 0x8D, 0x33, 0x9F, 0x11, 0x83, 0x14];
 	
+	immutable ubyte[][17] pads = [
+	[],[1],[2,2],[3,3,3],[4,4,4,4],[5,5,5,5,5],[6,6,6,6,6,6],[7,7,7,7,7,7,7],[8,8,8,8,8,8,8,8],
+	[9,9,9,9,9,9,9,9,9],[10,10,10,10,10,10,10,10,10,10],[11,11,11,11,11,11,11,11,11,11,11],
+	[12,12,12,12,12,12,12,12,12,12,12,12],[13,13,13,13,13,13,13,13,13,13,13,13,13],
+	[14,14,14,14,14,14,14,14,14,14,14,14,14,14],[15,15,15,15,15,15,15,15,15,15,15,15,15,15,15],
+	[16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16]
+	];
+	
 	ubyte[] M;
 	ubyte[16] C; //Checksum
 	ubyte[48] X;
 	bool end;
 	ubyte L;
 	
-	void PadMessage()
+	
+	
+	void PadMessage()//Might be better to pre-compute pad; Meh only some improvement
 	{
 		ubyte pad = 16-M.length%16;
-		for(ubyte i = 0; i == 0 || (M.length%16 != 0); i++)
-			M ~= pad;
+		/*for(ubyte i = 0; i == 0 || (M.length%16 != 0); i++)
+			M ~= pad;*/
+		M ~= pads[pad];
 	}
 	
 	void AddToChecksum(ubyte[] H)
@@ -100,8 +111,8 @@ class MD2Context : HashContext
 			L = C[15];
 			for (uint j = 0; j < 16; j++)
 			{
-				ubyte c = H[i*16+j];
-				C[j] = C[j] ^ S[c ^ L];
+				//ubyte c = H[i*16+j];
+				C[j] ^= S[H[i*16+j] ^ L];
 				L = C[j];
 			}
 		}
@@ -114,27 +125,27 @@ class MD2Context : HashContext
 	
 	void AddToHash(ubyte[] H)
 	{
-		if(H.length > 0)
+	
+		if(!end)
+			AddToChecksum(H);
+		for (uint i = 0; i < H.length/16; i++)
 		{
-			if(!end)
-				AddToChecksum(H);
-			for (uint i = 0; i < H.length/16; i++)
+			X[16..32] = H[i*16..(i+1)*16];//for some reason assignment is faster, but operations are slower this way... D...
+			//X[32..48] = X[16..32] ^ X[0..16];//this is slower
+			for(uint j = 0; j < 16; j++)
 			{
-				for(uint j = 0; j < 16; j++)
+				//X[16+j] = H[i*16+j]; // this is slower
+				X[32+j] = X[16+j] ^ X[j];//this is faster
+			}
+			uint t = 0;
+			for(uint j = 0; j < 18; j++)
+			{
+				for(uint k = 0; k < 48; k++)
 				{
-					X[16+j] = H[i*16+j];
-					X[32+j] = X[16+j] ^ X[j];
+					X[k] ^= S[t];
+					t = X[k];
 				}
-				uint t = 0;
-				for(uint j = 0; j < 18; j++)
-				{
-					for(uint k = 0; k < 48; k++)
-					{
-						X[k] ^= S[t];
-						t = X[k];
-					}
-					t = (t+j)&0xff;
-				}
+				t = (t+j)&0xff;
 			}
 		}
 	}
@@ -143,13 +154,10 @@ class MD2Context : HashContext
 	
 	this()
 	{
-		for(uint i = 0; i < 16; i++)
-			C[i] = 0;
-			
+		C[] = 0;//assignment this way faster than loop
 		M = [];	
 		
-		for(uint i = 0; i < 48; i++)
-			X[i] = 0;
+		X[] = 0;
 			
 		end = false;	
 		L = 0;
@@ -157,9 +165,12 @@ class MD2Context : HashContext
 	
 	void AddToContext(ubyte[] m)
 	{
-		ubyte[] Z = M.dup ~ m.dup;
-		ubyte[] H = Z[0..(Z.length-(Z.length%16))].dup;
-		M = Z[Z.length-(Z.length%16)..Z.length].dup;
+		//ubyte[] Z = M.dup ~ m.dup;
+		ubyte[] Z = M ~ m;
+//		ubyte[] H = Z[0..(Z.length-(Z.length%16))].dup;
+//		M = Z[Z.length-(Z.length%16)..Z.length].dup;
+		ubyte[] H = Z[0..(Z.length-(Z.length%16))];
+		M = Z[Z.length-(Z.length%16)..Z.length];
 		
 		if(H.length > 0)
 			AddToHash(H);

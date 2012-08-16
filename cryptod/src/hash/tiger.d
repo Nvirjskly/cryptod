@@ -722,5 +722,5 @@ unittest
 	tc.AddToContext("abc");
 	tc.End();
 	import std.stdio;
-	writeln(tc.AsString());
+	writeln("Tiger ",tc.AsString());
 }

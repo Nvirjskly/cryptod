@@ -84,5 +84,5 @@ unittest
 	
 	ubyte[] key = PBKDF2(&HMAC_SHA1, "password", [0x78,0x57,0x8E,0x5A,0x5D,0x63,0xCB,0x06], 1000, 16);
 	
-	writefln("%(%02x%)",key);
+	//writefln("%(%02x%)",key);
 }
