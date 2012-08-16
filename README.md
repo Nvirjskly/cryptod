@@ -7,7 +7,7 @@ Let's start with a practical example:
 
 <pre>
 	import cryptod.blockcipher.aes;
-	import cryptod.prf.hmac;
+	import cryptod.mac.hmac;
 	import cryptod.hash.sha1;
 	import cryptod.kdf.pbkdf2;
 	import cryptod.prng.mersennetwister;
