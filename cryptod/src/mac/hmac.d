@@ -32,6 +32,11 @@
 
 module cryptod.prf.hmac;
 
+import cryptod.hash.sha1;
+
+//This constructs an hmac out of a sha1 function.
+alias hmac!(SHA1ub) HMAC_SHA1; 
+
 /**
  * HMAC
  */

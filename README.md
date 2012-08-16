@@ -19,6 +19,8 @@ Let's start with a practical example:
 	uint[] seed = [(t&0xffff),(t>>1)&0xffff,(t>>2)&0xffff,(t>>3)&0xffff,(t>>4)&0xffff,
 	(t>>5)&0xffff,(t>>6)&0xffff,(t>>7)&0xffff,(t>>8)&0xffff,(t>>9)&0xffff,(t>>10)&0xffff,
 	(t>>11)&0xffff,(t>>12)&0xffff,(t>>13)&0xffff,(t>>14)&0xffff,(t>>15)&0xffff];
+	//If I ever get around to it, I will build a much simpler seeding interface 
+	//that will have optional sources of entropy
 	
 	//seeds a MersenneTwister
 	MersenneTwister mt = new MersenneTwister(seed);
@@ -27,9 +29,6 @@ Let's start with a practical example:
 	ubyte[] salt = [(mt.getNextInt()&0xff),(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,
 	(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,
 	(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff];
-	
-	//This constructs an hmac out of a sha1 function.
-	alias hmac!(SHA1ub) HMAC_SHA1; 
 	
 	//This generates a 128-bit key from the password "password" using a 10,000 iteration PBKDF2 function.
 	ubyte[] key = PBKDF2(&HMAC_SHA1, "password", salt, 10000, 16); 
@@ -72,7 +71,8 @@ Hashes
 
 Context Hashes:
  * SHA1
- * MD2 (for legacy RSA support)
+ * MD2
+ * MD4
  * (BROKEN) Tiger
  
 'Fast' Hashes: (these hashes are not suitable for cryptographic purposes.)
