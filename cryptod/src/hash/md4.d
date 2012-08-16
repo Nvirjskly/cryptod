@@ -35,7 +35,26 @@ import std.string, std.format, std.array;
 
 import cryptod.hash.hash;
 
-class MD4Context
+/**
+ * MD4 function that uses the MD4 context and takes a simple string argument.
+ */
+ubyte[] MD4s(string s)
+{
+	return MD4ub(cast(ubyte[]) s);
+}
+/**
+ * MD4 function that uses the MD4 context and takes a simple ubyte[] argument.
+ */
+ubyte[] MD4ub(ubyte[] s)
+{
+	auto md0 = new MD4Context();
+	md0.AddToContext(s);
+	md0.End();
+	ubyte[] ret = md0.AsBytes();
+	return ret;
+}
+
+class MD4Context : HashContext
 {
 	private:
 	ubyte[] M;
@@ -100,6 +119,48 @@ class MD4Context
 		(messageLength >> 48) & 0xff, (messageLength >> 56) & 0xff];
 	}
 	
+	void AddToHash(ubyte[] H)
+	{
+		//messageLength += H.length;
+		for(uint i = 0; i < H.length/64; i++)
+		{
+			for(uint j = 0; j < 16; j++)
+			{
+				ubyte[4] w = H[i*64+4*j..i*64+4*j+4];
+				X[j] = w[0] + (w[1]<<8)+(w[2]<<16)+(w[3]<<24);
+			}
+			
+			//Saves A, B, C, and D.
+			AA = A;
+			BB = B;
+			CC = C;
+			DD = D;
+			
+			//Round 1
+			round1(A, B, C, D,  0,  3);  round1(D, A, B, C,  1,  7);  round1(C, D, A, B,  2, 11);  round1(B, C, D, A,  3, 19);
+			round1(A, B, C, D,  4,  3);  round1(D, A, B, C,  5,  7);  round1(C, D, A, B,  6, 11);  round1(B, C, D, A,  7, 19);
+			round1(A, B, C, D,  8,  3);  round1(D, A, B, C,  9,  7);  round1(C, D, A, B, 10, 11);  round1(B, C, D, A, 11, 19);
+			round1(A, B, C, D, 12,  3);  round1(D, A, B, C, 13,  7);  round1(C, D, A, B, 14, 11);  round1(B, C, D, A, 15, 19);
+			
+			//Round 2
+			round2(A, B, C, D,  0,  3);  round2(D, A, B, C,  4,  5);  round2(C, D, A, B,  8,  9);  round2(B, C, D, A, 12, 13);
+			round2(A, B, C, D,  1,  3);  round2(D, A, B, C,  5,  5);  round2(C, D, A, B,  9,  9);  round2(B, C, D, A, 13, 13);
+			round2(A, B, C, D,  2,  3);  round2(D, A, B, C,  6,  5);  round2(C, D, A, B, 10,  9);  round2(B, C, D, A, 14, 13);
+			round2(A, B, C, D,  3,  3);  round2(D, A, B, C,  7,  5);  round2(C, D, A, B, 11,  9);  round2(B, C, D, A, 15, 13);
+			
+			//Round 3
+			round3(A, B, C, D,  0,  3);  round3(D, A, B, C,  8,  9);  round3(C, D, A, B,  4, 11);  round3(B, C, D, A, 12, 15);
+			round3(A, B, C, D,  2,  3);  round3(D, A, B, C, 10,  9);  round3(C, D, A, B,  6, 11);  round3(B, C, D, A, 14, 15);
+			round3(A, B, C, D,  1,  3);  round3(D, A, B, C,  9,  9);  round3(C, D, A, B,  5, 11);  round3(B, C, D, A, 13, 15);
+			round3(A, B, C, D,  3,  3);  round3(D, A, B, C, 11,  9);  round3(C, D, A, B,  7, 11);  round3(B, C, D, A, 15, 15);
+			
+			A += AA;
+			B += BB;
+			C += CC;
+			D += DD;
+		}
+	}
+	
 	public:
 	this()
 	{
@@ -111,55 +172,61 @@ class MD4Context
 		D = 0x10325476;//This one is literally Hitler
 	}
 	
-	ubyte[] naiveTest(ubyte[] m)
+	ubyte[] AsBytes()
 	{
-		M = m;
-		messageLength += m.length;
-		PadMessage();
-		for(uint i = 0; i < M.length/64; i++)
-		{
-			for(uint j = 0; j < 16; j++)
-			{
-				ubyte[4] w = M[i*64+4*j..i*64+4*j+4];
-				X[j] = w[0] + (w[1]<<8)+(w[2]<<16)+(w[3]<<24);
-			}
-			
-			AA = A;
-			BB = B;
-			CC = C;
-			DD = D;
-			
-			round1(A, B, C, D,  0,  3);  round1(D, A, B, C,  1,  7);  round1(C, D, A, B,  2, 11);  round1(B, C, D, A,  3, 19);
-			round1(A, B, C, D,  4,  3);  round1(D, A, B, C,  5,  7);  round1(C, D, A, B,  6, 11);  round1(B, C, D, A,  7, 19);
-			round1(A, B, C, D,  8,  3);  round1(D, A, B, C,  9,  7);  round1(C, D, A, B, 10, 11);  round1(B, C, D, A, 11, 19);
-			round1(A, B, C, D, 12,  3);  round1(D, A, B, C, 13,  7);  round1(C, D, A, B, 14, 11);  round1(B, C, D, A, 15, 19);
-			
-			round2(A, B, C, D,  0,  3);  round2(D, A, B, C,  4,  5);  round2(C, D, A, B,  8,  9);  round2(B, C, D, A, 12, 13);
-			round2(A, B, C, D,  1,  3);  round2(D, A, B, C,  5,  5);  round2(C, D, A, B,  9,  9);  round2(B, C, D, A, 13, 13);
-			round2(A, B, C, D,  2,  3);  round2(D, A, B, C,  6,  5);  round2(C, D, A, B, 10,  9);  round2(B, C, D, A, 14, 13);
-			round2(A, B, C, D,  3,  3);  round2(D, A, B, C,  7,  5);  round2(C, D, A, B, 11,  9);  round2(B, C, D, A, 15, 13);
-			
-			round3(A, B, C, D,  0,  3);  round3(D, A, B, C,  8,  9);  round3(C, D, A, B,  4, 11);  round3(B, C, D, A, 12, 15);
-			round3(A, B, C, D,  2,  3);  round3(D, A, B, C, 10,  9);  round3(C, D, A, B,  6, 11);  round3(B, C, D, A, 14, 15);
-			round3(A, B, C, D,  1,  3);  round3(D, A, B, C,  9,  9);  round3(C, D, A, B,  5, 11);  round3(B, C, D, A, 13, 15);
-			round3(A, B, C, D,  3,  3);  round3(D, A, B, C, 11,  9);  round3(C, D, A, B,  7, 11);  round3(B, C, D, A, 15, 15);
-			
-			A += AA;
-			B += BB;
-			C += CC;
-			D += DD;
-		}
-		
 		return [(A)&0xff, (A>>8)&0xff, (A>>16)&0xff, (A>>24)&0xff,
 		(B)&0xff, (B>>8)&0xff, (B>>16)&0xff, (B>>24)&0xff,
 		(C)&0xff, (C>>8)&0xff, (C>>16)&0xff, (C>>24)&0xff,
-		(D)&0xff, (D>>8)&0xff, (D>>16)&0xff, (D>>24)&0xff];
+		(D)&0xff, (D>>8)&0xff, (D>>16)&0xff, (D>>24)&0xff];//Returns values with the least sig. byte first.
+	}
+	
+	string AsString()
+	{
+		auto writer = appender!string();
+		formattedWrite(writer, "%(%02x%)",AsBytes());
+		return writer.data;
+	}
+	
+	void AddToContext(string s)
+	{
+		AddToContext(cast(ubyte[])s);
+	}
+	
+	void AddToContext(ubyte[] m)
+	{
+		messageLength += m.length;
+		ubyte[] Z = M ~ m;
+		ubyte[] H = Z[0..(Z.length-(Z.length%64))];
+		M = Z[Z.length-(Z.length%64)..Z.length];
+		
+		if(H.length > 0)
+			AddToHash(H);
+	}
+	
+	void End()
+	{
+		PadMessage();
+		AddToHash(M);
 	}
 }
 
 unittest
 {
 	import std.stdio;
-	auto md4 = new MD4Context();
-	writefln("%(%02x%)",md4.naiveTest(cast(ubyte[])""));
+	//writeln(MD4s(""));
+	assert(MD4s("") ==
+		[0x31,0xd6,0xcf,0xe0,0xd1,0x6a,0xe9,0x31,0xb7,0x3c,0x59,0xd7,0xe0,0xc0,0x89,0xc0]);
+	assert(MD4s("a") ==
+		[0xbd,0xe5,0x2c,0xb3,0x1d,0xe3,0x3e,0x46,0x24,0x5e,0x05,0xfb,0xdb,0xd6,0xfb,0x24]);
+	assert(MD4s("abc") == 
+		[0xa4,0x48,0x01,0x7a,0xaf,0x21,0xd8,0x52,0x5f,0xc1,0x0a,0xe8,0x7a,0xa6,0x72,0x9d]);
+	assert(MD4s("message digest") == 
+		[0xd9,0x13,0x0a,0x81,0x64,0x54,0x9f,0xe8,0x18,0x87,0x48,0x06,0xe1,0xc7,0x01,0x4b]);
+	assert(MD4s("abcdefghijklmnopqrstuvwxyz") == 
+		[0xd7,0x9e,0x1c,0x30,0x8a,0xa5,0xbb,0xcd,0xee,0xa8,0xed,0x63,0xdf,0x41,0x2d,0xa9]);
+	assert(MD4s("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") == 
+		[0x04,0x3f,0x85,0x82,0xf2,0x41,0xdb,0x35,0x1c,0xe6,0x27,0xe1,0x53,0xe7,0xf0,0xe4]);
+	assert(MD4s("12345678901234567890123456789012345678901234567890123456789012345678901234567890") == 
+		[0xe3,0x3b,0x4d,0xdc,0x9c,0x38,0xf2,0x19,0x9c,0x3e,0x7b,0x16,0x4f,0xcc,0x05,0x36]);
+	writeln("MD4 unittest passed.");
 }
