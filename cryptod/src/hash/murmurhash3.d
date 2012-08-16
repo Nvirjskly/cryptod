@@ -25,11 +25,11 @@ private:
 
 @safe pure void fmix64 ( ref ulong k )
 {
-  k ^= k >> 33;
-  k *= 0xff51afd7ed558ccd;
-  k ^= k >> 33;
-  k *= 0xc4ceb9fe1a85ec53;
-  k ^= k >> 33;
+	k ^= k >> 33;
+	k *= 0xff51afd7ed558ccd;
+	k ^= k >> 33;
+	k *= 0xc4ceb9fe1a85ec53;
+	k ^= k >> 33;
 }
 
 public:
@@ -76,10 +76,14 @@ pure uint murmurhash3_x86_32(ubyte[] key, uint seed)
 	{
 		default:
 		case 3: k1 ^= tail[2] << 16;
+		break;
 		case 2: k1 ^= tail[1] << 8;
+		break;
 		case 1: k1 ^= tail[0];
 			k1 *= c1; k1 = ROTL32(k1,15); k1 *= c2; h1 ^= k1;
-	};
+		break;	
+
+	}
 
 
 	h1 ^= len;
@@ -169,7 +173,7 @@ pure uint[4] murmurhash3_x86_128(ubyte[] key, uint seed)
 		case	2: k1 ^= tail[ 1] << 8;
 		case	1: k1 ^= tail[ 0] << 0;
 						 k1 *= c1; k1	= ROTL32(k1,15); k1 *= c2; h1 ^= k1;
-	};
+	}
 
 	h1 ^= len; h2 ^= len; h3 ^= len; h4 ^= len;
 
@@ -246,8 +250,8 @@ pure ulong[2] murmurhash3_x64_128 (ubyte[] key, uint seed)
 		case	3: k1 ^= cast(ulong)(tail[ 2]) << 16;
 		case	2: k1 ^= cast(ulong)(tail[ 1]) << 8;
 		case	1: k1 ^= cast(ulong)(tail[ 0]) << 0;
-						 k1 *= c1; k1	= ROTL64(k1,31); k1 *= c2; h1 ^= k1;
-	};
+						 k1 *= c1; k1	= ROTL64(k1,31); k1 *= c2; h1 ^= k1;		 
+	}
 
 	h1 ^= len; h2 ^= len;
 
@@ -266,7 +270,9 @@ pure ulong[2] murmurhash3_x64_128 (ubyte[] key, uint seed)
 //Taken from official implementation
 unittest
 {
+	import std.stdio;
 	assert(murmurhash3_x86_32("abcde",42)==2933533680u);
 	assert(murmurhash3_x86_128("abcde",42)==[1480429215u,166782523u,3736068775u,3736068775u]);
 	assert(murmurhash3_x64_128("abcde",42)==[11577333987734259462u, 6620454430658148401u]);
+	writeln("Murmurhash3 unittest passed.");
 }
