@@ -64,7 +64,7 @@ class rdrand : PRNG
 
 unittest
 {
-	//import std.stdio;
-	//rdrand r = new rdrand();
-	//writeln("x : ", r.getNextInt());
+//	import std.stdio;
+//	rdrand r = new rdrand();
+//	writeln("x : ", r.getNextInt());
 }
