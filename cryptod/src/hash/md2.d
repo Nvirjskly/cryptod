@@ -36,14 +36,14 @@ import std.string, std.format, std.array;
 import cryptod.hash.hash;
 
 /**
- * MD2 function that uses the SHA1 context and takes a simple string argument.
+ * MD2 function that uses the MD2 context and takes a simple string argument.
  */
 ubyte[] MD2s(string s)
 {
 	return MD2ub(cast(ubyte[]) s);
 }
 /**
- * MD2 function that uses the SHA1 context and takes a simple ubyte[] argument.
+ * MD2 function that uses the MD2 context and takes a simple ubyte[] argument.
  */
 ubyte[] MD2ub(ubyte[] s)
 {
