@@ -30,7 +30,7 @@
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
 
-module cryptod.prf.hmac;
+module cryptod.mac.hmac;
 
 import cryptod.hash.sha1;
 

@@ -76,7 +76,7 @@ ubyte[] PBKDF2(ubyte[] function(ubyte[],ubyte[]) PRF, string P, ubyte[] S, uint 
 
 unittest
 {
-	import cryptod.prf.hmac;
+	import cryptod.mac.hmac;
 	import cryptod.hash.sha1;
 	import std.stdio;
 	

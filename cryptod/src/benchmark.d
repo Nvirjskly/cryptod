@@ -181,7 +181,7 @@ void benchmark(void delegate(uint i) f, ulong amount, uint bytes, string message
 void main()
 {
 	import cryptod.blockcipher.aes;
-	import cryptod.prf.hmac;
+	import cryptod.mac.hmac;
 	import cryptod.hash.sha1;
 	import cryptod.kdf.pbkdf2;
 	import cryptod.prng.mersennetwister;
