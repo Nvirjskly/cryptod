@@ -200,9 +200,6 @@ void main()
 	ubyte[] salt = [(mt.getNextInt()&0xff),(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,
 	(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff];
 	
-	//This constructs an hmac out of a sha1 function.
-	alias hmac!(SHA1ub) HMAC_SHA1; 
-	
 	//This generates a 128-bit key from the password "password" using a 10,000 iteration PBKDF2 function.
 	ubyte[] key = PBKDF2(&HMAC_SHA1, "password", salt, 10000, 16); 
 	
