@@ -36,7 +36,7 @@ import cryptod.blockcipher.threefish;
 
 import cryptod.blockcipher.aes;
 
-import cryptod.hash.murmurhash3;
+//import cryptod.hash.murmurhash3;
 
 import cryptod.hash.sha1;
 
@@ -51,7 +51,7 @@ import cryptod.primes.primes;
 import std.datetime, std.stdio, std.random, std.conv, std.bigint;
 
 
-void benchmark_murmur3()
+/*void benchmark_murmur3()
 {
 	string input = "";
 	
@@ -73,7 +73,7 @@ void benchmark_murmur3()
 	auto h = delegate(uint i){murmurhash3_x64_128(input,i);};
 		
 	benchmark(f,numtimes,strLen,"murmurhash3_x64_128");
-}
+}*/
 
 void benchmark_sha1()
 {
@@ -217,7 +217,7 @@ void main()
 	
 	assert(input == deciphered);
 	
-	benchmark_murmur3();
+	//benchmark_murmur3();
 	benchmark_md2();
 	benchmark_sha1();
 	benchmark_mersenne();

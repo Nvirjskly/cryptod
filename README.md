@@ -73,15 +73,13 @@ Context Hashes:
  * SHA1
  * MD2
  * MD4
+ * MD5
  * (BROKEN) Tiger
  
-'Fast' Hashes: (these hashes are not suitable for cryptographic purposes.)
- * murmurhash3
  
 Planned:
  * SHA2 Family
  * All SHA3 finalists (Skein &al)
- * More fast hashes
 
 Pseudo Random Number Generators
 -------------------------------
