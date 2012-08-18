@@ -228,6 +228,9 @@ class MD5Context
 		ubyte[] Z = M ~ m;
 		ubyte[] H = Z[0..(Z.length-(Z.length%64))];
 		M = Z[Z.length-(Z.length%64)..Z.length];
+		//ulong zl = M.length+m.length;
+		//ubyte[]H = (M~m)[0..(zl-(zl%64))];
+		//M = 
 		
 		if(H.length > 0)
 			AddToHash(H);

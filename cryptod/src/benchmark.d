@@ -42,6 +42,10 @@ import cryptod.hash.sha1;
 
 import cryptod.hash.md2;
 
+import cryptod.hash.md4;
+
+import cryptod.hash.md5;
+
 import cryptod.prng.mersennetwister;
 
 import cryptod.prng.blumblumshub;
@@ -105,6 +109,38 @@ void benchmark_md2()
 	auto f = delegate(uint i){MD2s(input);};
 		
 	benchmark(f,numtimes,strLen,"md2");	
+}
+
+void benchmark_md4()
+{
+	string input = "";
+	
+	uint numtimes = 0x8000;
+	
+	uint strLen = 1024;
+	
+	for(uint i = 0; i < strLen; i++)
+		input ~= text(uniform(0,0xf));
+
+	auto f = delegate(uint i){MD4s(input);};
+		
+	benchmark(f,numtimes,strLen,"md4");	
+}
+
+void benchmark_md5()
+{
+	string input = "";
+	
+	uint numtimes = 0x8000;
+	
+	uint strLen = 1024;
+	
+	for(uint i = 0; i < strLen; i++)
+		input ~= text(uniform(0,0xf));
+
+	auto f = delegate(uint i){MD5s(input);};
+		
+	benchmark(f,numtimes,strLen,"md5");	
 }
 
 void benchmark_mersenne()
@@ -219,6 +255,8 @@ void main()
 	
 	//benchmark_murmur3();
 	benchmark_md2();
+	benchmark_md4();
+	benchmark_md5();
 	benchmark_sha1();
 	benchmark_mersenne();
 	benchmark_bbs();
