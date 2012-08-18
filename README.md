@@ -74,6 +74,7 @@ Context Hashes:
  * MD2
  * MD4
  * MD5
+ * RIPEMD-160
  * (BROKEN) Tiger
  
  
