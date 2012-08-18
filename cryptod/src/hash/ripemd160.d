@@ -48,7 +48,7 @@ ubyte[] RIPEMD160ub(ubyte[] s)
 	return ret;
 }
 
-class RIPEMD160Context //: HashContext
+class RIPEMD160Context : HashContext
 {
 	private:
 	
@@ -240,11 +240,49 @@ class RIPEMD160Context //: HashContext
 		(H[4])&0xff, (H[4]>>8)&0xff, (H[4]>>16)&0xff, (H[4]>>24)&0xff];
 	}
 	
+	string AsString()
+	{
+		auto writer = appender!string();
+		formattedWrite(writer, "%(%02x%)",AsBytes());
+		return writer.data;
+	}
+	
 }
 
 unittest
 {
-	import std.stdio;
-	//writefln("%(%02x%)",RIPEMD160s(""));
-	//writefln("%(%02x%)",RIPEMD160s("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"));
+	import std.stdio, std.format;
+	string ths(ubyte[] h)
+	{
+		auto writer = appender!string();
+		formattedWrite(writer, "%(%02x%)",h);
+		return writer.data;
+	}
+	
+	assert(ths(RIPEMD160s("")) == "9c1185a5c5e9fc54612808977ee8f548b2258d31");
+	assert(ths(RIPEMD160s("a")) == "0bdc9d2d256b3ee9daae347be6f4dc835a467ffe");
+	assert(ths(RIPEMD160s("abc")) == "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc");
+	assert(ths(RIPEMD160s("message digest")) == "5d0689ef49d2fae572b881b123a85ffa21595f36");
+	assert(ths(RIPEMD160s("abcdefghijklmnopqrstuvwxyz")) == "f71c27109c692c1b56bbdceb5b9d2865b3708dbc");
+	assert(ths(RIPEMD160s("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")) == "12a053384a9c0c88e405a06c27dcf49ada62eb2b");
+	assert(ths(RIPEMD160s("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")) == "b0e20b6e3116640286ed3a87a5713079b21f5189");
+	
+	auto rd0 = new RIPEMD160Context();
+	for(uint i = 0; i < 8; i++)
+		rd0.AddToContext("1234567890");
+	rd0.End();
+	assert(rd0.AsString() == "9b752e45573d4b39f4dbd3323cab82bf63326bfb");
+	
+	auto rd1 = new RIPEMD160Context();
+	for(uint i = 0; i < 1_000_000; i++)
+		rd1.AddToContext("a");
+	rd1.End();
+	assert(rd1.AsString() == "52783243c1697bdbe16d37f97f68f08325dc1528");
+	
+	string oneMilA = "";
+	for(uint i = 0; i < 1_000_000; i++)
+		oneMilA ~= "a";
+	assert(ths(RIPEMD160s(oneMilA)) == "52783243c1697bdbe16d37f97f68f08325dc1528");
+		
+	writeln("RIPEMD160 unittest passed.");	
 }
