@@ -62,10 +62,10 @@ ubyte[] SHA1ub(ubyte[] s)
 class SHA1Context : HashContext
 {
 	private:
-	immutable uint k1 = 0x5a827999; //SHA1 Constant
-	immutable uint k2 = 0x6ed9eba1; //SHA1 Constant
-	immutable uint k3 = 0x8f1bbcdc; //SHA1 Constant
-	immutable uint k4 = 0xca62c1d6; //SHA1 Constant
+	static immutable uint k1 = 0x5a827999; //SHA1 Constant
+	static immutable uint k2 = 0x6ed9eba1; //SHA1 Constant
+	static immutable uint k3 = 0x8f1bbcdc; //SHA1 Constant
+	static immutable uint k4 = 0xca62c1d6; //SHA1 Constant
 	
 	uint[5] H; ///Hash iteration vars.
 	ubyte[] buffer;
@@ -115,7 +115,7 @@ class SHA1Context : HashContext
 			return Parity(x,y,z);
 	}
 	
-	pure ubyte[] WordsToBytes(uint[] Z)
+	pure ubyte[] WordsToBytes(uint[] Z) //this can prolly be D-efied
 	{
 		uint numBytes = Z.length * 4;
 		
