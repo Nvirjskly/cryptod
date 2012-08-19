@@ -31,9 +31,63 @@
 
 module cryptod.hash.ripemd160;
 
-import std.string, std.format, std.array;
+import std.format, std.array;
 
 import cryptod.hash.hash;
+
+private string makeR1 ()
+{
+	import std.conv;
+	//string ret = "static immutable uint[80] r1 = ";
+	uint[] r0 = [7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8];
+	string ret;
+	ret ~= "static immutable uint[80] r1 = [";
+	for(uint j = 0; j < 80; j++)
+	{
+		if (j < 16)
+			ret ~= text(j);
+		else if (j < 32)
+			ret ~= text(r0[j%16]);
+		else if (j < 48)
+			ret ~= text(r0[r0[j%16]]);
+		else if (j < 64)
+			ret ~= text(r0[r0[r0[j%16]]]);
+		else
+			ret ~= text(r0[r0[r0[r0[j%16]]]]);
+		if (j != 79)
+			ret ~= ",";
+		else
+			ret ~= "];";
+	}
+	return ret;
+}
+
+private string makeR2 ()
+{
+	import std.conv;
+	uint[] r0 = [7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8];
+	string ret;
+	ret ~= "static immutable uint[80] r2 = [";
+	uint pi(uint i) { return (9*i+5)%16; } 
+	for(uint j = 0; j < 80; j++)
+	{
+		if (j < 16)
+			ret ~= text(pi(j));
+		else if (j < 32)
+			ret ~= text(r0[pi(j%16)]);
+		else if (j < 48)
+			ret ~= text(r0[r0[pi(j%16)]]);
+		else if (j < 64)
+			ret ~= text(r0[r0[r0[pi(j%16)]]]);
+		else
+			ret ~= text(r0[r0[r0[r0[pi(j%16)]]]]);
+		if (j != 79)
+			ret ~= ",";
+		else
+			ret ~= "];";
+	}
+	return ret;
+}
 
 ubyte[] RIPEMD160s(string s)
 {
@@ -54,61 +108,26 @@ class RIPEMD160Context : HashContext
 	
 	union words { ubyte[16*4] b; uint[16] i; }
 	
-	static immutable uint[16] ro = [7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8];
-	
-	@safe pure uint pi(uint i) { return (9*i+5)%16; }
+	mixin(makeR1()); //compile time array initialisation;
+	mixin(makeR2());
 	
 	static immutable uint K1[5] = [0x00000000, 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xa953fd4e];
 	
 	static immutable uint K2[5] = [0x50a28be6, 0x5c4dd124, 0x6d703ef3, 0x7a6d76e9, 0x00000000];
-	
-//	immutable uint S[80] = [11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8, 12,
-//	13, 11, 15, 6, 9, 9, 7, 12, 15, 11, 13, 7, 8, 7, 7, 13, 15, 14, 11, 7, 7, 6, 8, 13,
-//	14, 13, 12, 5, 5, 6, 9, 14, 11, 12, 14, 8, 6, 5, 5, 15, 12, 15, 14, 9, 9, 8, 6, 15,
-//	12, 13, 13, 9, 5, 8, 6, 14, 11, 12, 11, 8, 6, 5, 5];
-	
 
-	static immutable uint[] S1 = [11,14,15,12,5,8,7,9,11,13,14,15,6,7,9,8,
+	static immutable uint[80] S1 = [11,14,15,12,5,8,7,9,11,13,14,15,6,7,9,8,
 	7,6,8,13,11,9,7,15,7,12,15,9,11,7,13,12,
 	11,13,6,7,14,9,13,15,14,8,13,6,5,12,7,5,
 	11,12,14,15,14,15,9,8,9,14,5,6,8,6,5,12,
 	9,15,5,11,6,8,13,12,5,12,13,14,11,8,5,6];
 
-	static immutable uint[] S2 = [8,9,9,11,13,15,15,5,7,7,8,11,14,14,12,6,
+	static immutable uint[80] S2 = [8,9,9,11,13,15,15,5,7,7,8,11,14,14,12,6,
 	9,13,15,7,12,8,9,11,7,7,12,7,6,15,13,11,
 	9,7,15,11,8,6,6,14,12,13,5,14,13,13,7,5,
 	15,5,8,11,14,14,6,14,6,9,12,9,12,5,15,8,
 	8,5,12,9,12,5,14,6,8,13,6,5,15,13,11,11];
 	
-	@safe pure uint r1(uint j)
-	{
-		if (j < 16)
-			return j;
-		else if (j < 32)
-			return ro[j%16];
-		else if (j < 48)
-			return ro[ro[j%16]];
-		else if (j < 64)
-			return ro[ro[ro[j%16]]];
-		else
-			return ro[ro[ro[ro[j%16]]]];
-	}
-	
-	@safe pure uint r2(uint j)
-	{
-		if (j < 16)
-			return pi(j);
-		else if (j < 32)
-			return ro[pi(j)];
-		else if (j < 48)
-			return ro[ro[pi(j)]];
-		else if (j < 64)
-			return ro[ro[ro[pi(j)]]];
-		else
-			return ro[ro[ro[ro[pi(j)]]]];
-	}
-	
-	@safe pure uint f(uint j, uint x, uint y, uint z)
+	uint f(uint j, uint x, uint y, uint z)  @safe pure nothrow 
 	{
 		if(j < 16)
 			return f1(x,y,z);
@@ -122,50 +141,49 @@ class RIPEMD160Context : HashContext
 			return f5(x,y,z);
 	}
 	
-	@safe pure uint f1(uint x, uint y, uint z)
+	uint f1(uint x, uint y, uint z) @safe pure nothrow
 	{
 		return x ^ y ^ z;
 	}
 	
-	@safe pure uint f2(uint x, uint y, uint z)
+	uint f2(uint x, uint y, uint z) @safe pure nothrow
 	{
 		return ( x & y ) | ( ~x & z );
 	}
 	
-	@safe pure uint f3(uint x, uint y, uint z)
+	uint f3(uint x, uint y, uint z) @safe pure nothrow
 	{
 		return ( x | ~y ) ^ z;
 	}
 	
-	@safe pure uint f4(uint x, uint y, uint z)
+	uint f4(uint x, uint y, uint z) @safe pure nothrow
 	{
 		return ( x & z ) | ( y & ~z );
 	}
 	
-	@safe pure uint f5(uint x, uint y, uint z)
+	uint f5(uint x, uint y, uint z) @safe pure nothrow
 	{
 		return x ^ ( y | ~z );
 	}
 	
-	@safe pure uint ROTL(uint x, uint n)
+	@safe pure uint ROTL(uint x, uint n) @safe pure nothrow
 	{ return ( x << n ) | ( x >> ( 32-n ) ); }
 	
 	
 	uint[5] H = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
-	
 	ubyte[] M;
-	
 	ulong messageLength;
+	uint[16] X;
+	words Xw;
 	
 	void PadMessage()
 	{
 		M ~= 0b10000000;
-		while(M.length % 64 != 56)
-		{
-			M ~= 0;
-		}
+
+		M ~= new ubyte[(M.length>56)?(64-M.length+56):(56-(M.length % 64))];//more D-like
 		PadLength();
 	}
+	
 	//Pads the message with the message length as too spec. Lowest order bits first.
 	void PadLength()
 	{
@@ -177,28 +195,20 @@ class RIPEMD160Context : HashContext
 	
 	void AddToHash(ubyte[] F)
 	{
-		uint[16] X;
-		words Xw;
 		for(uint i = 0; i < F.length/64; i++)
 		{
 			uint A1 = H[0]; uint B1 = H[1]; uint C1 = H[2]; uint D1 = H[3]; uint E1 = H[4];
 			uint A2 = H[0]; uint B2 = H[1]; uint C2 = H[2]; uint D2 = H[3]; uint E2 = H[4];
 			
-//			for(uint j = 0; j < 16; j++)
-//			{
-//				ubyte[4] w = F[i*64+4*j..i*64+4*j+4];
-//				X[j] = w[0] + (w[1]<<8)+(w[2]<<16)+(w[3]<<24);
-//			}
 			Xw.b = F[i*64..i*64+4*16]; //This is much faster :)
 			X[] = Xw.i;
 			
-			
 			uint T;
-			for(uint j = 0; j < 80; j++)
+			for(uint j = 0; j < 80; j++) // might get improvements if I spread out the rounds
 			{
-				T = ROTL( A1 + f(j,B1,C1,D1) + X[r1(j)] + K1[j/16], S1[j] ) + E1;
+				T = ROTL( A1 + f(j,B1,C1,D1) + X[r1[j]] + K1[j/16], S1[j] ) + E1;
 				A1 = E1; E1 = D1; D1 = ROTL(C1, 10); C1 = B1; B1 = T;
-				T = ROTL( A2 + f(79-j,B2,C2,D2) + X[r2(j)] + K2[j/16], S2[j] ) + E2;
+				T = ROTL( A2 + f(79-j,B2,C2,D2) + X[r2[j]] + K2[j/16], S2[j] ) + E2;
 				A2 = E2; E2 = D2; D2 = ROTL(C2, 10); C2 = B2; B2 = T;
 			}
 			T = H[1] + C1 + D2; H[1] = H[2] + D1 + E2; H[2] = H[3] + E1 + A2;
@@ -223,8 +233,8 @@ class RIPEMD160Context : HashContext
 	{
 		messageLength += m.length;
 		ubyte[] Z = M ~ m;
-		ubyte[] F = Z[0..(Z.length-(Z.length%64))];
-		M = Z[Z.length-(Z.length%64)..Z.length];
+		ubyte[] F = Z[0..($-($%64))];
+		M = Z[$-($%64)..$];
 		
 		if(F.length > 0)
 			AddToHash(F);
@@ -234,7 +244,6 @@ class RIPEMD160Context : HashContext
 	{
 		PadMessage();
 		AddToHash(M);
-		//writefln("%(%08x %)", H);
 	}
 
 	ubyte[] AsBytes()
@@ -252,12 +261,12 @@ class RIPEMD160Context : HashContext
 		formattedWrite(writer, "%(%02x%)",AsBytes());
 		return writer.data;
 	}
-	
 }
 
 unittest
 {
 	import std.stdio, std.format;
+	
 	string ths(ubyte[] h)
 	{
 		auto writer = appender!string();
