@@ -97,25 +97,25 @@ class MD5Context
 		(messageLength >> 48) & 0xff, (messageLength >> 56) & 0xff];
 	}
 	
-	@safe pure uint ROTL(uint x, uint n)
+	uint ROTL(uint x, uint n) 
 	{ return ( x << n ) | ( x >> ( 32-n ) ); }
 	
-	@safe pure uint F(uint x, uint y, uint z)
+	uint F(uint x, uint y, uint z) @safe pure nothrow
 	{
 		return ( ( x & y ) | ( ( ~x ) & z ) );
 	}
 
-	@safe pure uint G(uint x, uint y, uint z)
+	uint G(uint x, uint y, uint z) @safe pure nothrow
 	{
 		return ( ( x & z ) | ( y & ~z ) );
 	}
 	
-	@safe pure uint H(uint x, uint y, uint z)
+	uint H(uint x, uint y, uint z) @safe pure nothrow
 	{
 		return ( x ^ y ^ z );
 	}
 	
-	@safe pure uint I(uint X, uint Y, uint Z) 
+	uint I(uint X, uint Y, uint Z) @safe pure nothrow
 	{
 		return Y ^ (X | ~Z);
 	}
