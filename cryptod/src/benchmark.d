@@ -81,6 +81,18 @@ import std.datetime, std.stdio, std.random, std.conv, std.bigint;
 	benchmark(f,numtimes,strLen,"murmurhash3_x64_128");
 }*/
 
+//string largeFileSize()
+//{
+//	string ret = "const ulong[] asdf = [";
+//	for(uint i = 0; i < 25_000; i++)
+//		ret ~= "0,";
+//	ret ~= "0];";	
+//	return ret;
+//}
+//mixin(largeFileSize());
+//auto bigfile = cast(immutable ubyte[])import("bigfile");
+
+
 void benchmark_sha1()
 {
 	string input = "";
@@ -282,4 +294,10 @@ void main()
 	benchmark_blowfish();
 	benchmark_threefish();
 	benchmark_aes();
+	
+//	import std.file;
+//	ulong[] buffer = [];
+//	for(ulong i = 0; i < 100_000; i++)
+//		buffer ~= i;
+//	std.file.write("bigfile", buffer);
 }
