@@ -33,9 +33,11 @@
 module cryptod.mac.hmac;
 
 import cryptod.hash.sha1;
+import cryptod.hash.md5;
 
 //This constructs an hmac out of a sha1 function.
 alias hmac!(SHA1ub) HMAC_SHA1; 
+alias hmac!(MD5ub) HMAC_MD5;
 
 /**
  * HMAC
@@ -46,17 +48,13 @@ ubyte[] hmac(alias hash)(ubyte[] key, ubyte[] message)
 	if(key.length > blocksize)
 		key = hash(key);
 	if(key.length < blocksize)
-		for(uint i = 0; i < (blocksize - key.length); i++)
-			key ~= [0x00];
+		key ~= new ubyte[blocksize - key.length];
 			
-	ubyte[] o_key_pad = new ubyte[key.length];	
-	ubyte[] i_key_pad = new ubyte[key.length];	
+	ubyte[] o_key_pad = new ubyte[key.length];
+	ubyte[] i_key_pad = new ubyte[key.length];
 	
-	for(uint i = 0; i < key.length; i++)
-	{
-		o_key_pad[i] = 0x57 ^ key[i];
-		i_key_pad[i] = 0x36 ^ key[i];
-	}
+	o_key_pad[] = 0x57 ^ key[];
+	i_key_pad[] = 0x36 ^ key[];
 	
 	return hash(o_key_pad ~ hash(i_key_pad ~ message));
 }

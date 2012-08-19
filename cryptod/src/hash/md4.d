@@ -57,6 +57,9 @@ ubyte[] MD4ub(ubyte[] s)
 class MD4Context : HashContext
 {
 	private:
+	
+	union words { ubyte[16*4] b; uint[16] i; }
+	
 	ubyte[] M;
 	uint[16] X;
 	ulong messageLength;
@@ -121,14 +124,16 @@ class MD4Context : HashContext
 	
 	void AddToHash(ubyte[] H)
 	{
-		//messageLength += H.length;
+		words Xw;
 		for(uint i = 0; i < H.length/64; i++)
 		{
-			for(uint j = 0; j < 16; j++)
-			{
-				ubyte[4] w = H[i*64+4*j..i*64+4*j+4];
-				X[j] = w[0] + (w[1]<<8)+(w[2]<<16)+(w[3]<<24);
-			}
+//			for(uint j = 0; j < 16; j++)
+//			{
+//				ubyte[4] w = H[i*64+4*j..i*64+4*j+4];
+//				X[j] = w[0] + (w[1]<<8)+(w[2]<<16)+(w[3]<<24);
+//			}
+			Xw.b = H[i*64..i*64+4*16]; //This is much faster :)
+			X[] = Xw.i;
 			
 			//Saves A, B, C, and D.
 			AA = A;

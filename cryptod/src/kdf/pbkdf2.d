@@ -61,8 +61,9 @@ ubyte[] PBKDF2(ubyte[] function(ubyte[],ubyte[]) PRF, string P, ubyte[] S, uint 
 		for(uint j = 1; j < cc; j++)
 		{
 			ubyte[] NU = PRF(PP,U);
-			for(uint k = 0; k < NU.length; k++)
-				U[k] ^= NU[k];
+//			for(uint k = 0; k < NU.length; k++)
+//				U[k] ^= NU[k];
+			U[] ^= NU[];
 		}
 		return U;
 	}

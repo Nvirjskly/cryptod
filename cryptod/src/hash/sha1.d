@@ -62,11 +62,10 @@ ubyte[] SHA1ub(ubyte[] s)
 class SHA1Context : HashContext
 {
 	private:
-
-	uint k1 = 0x5a827999; //SHA1 Constant
-	uint k2 = 0x6ed9eba1; //SHA1 Constant
-	uint k3 = 0x8f1bbcdc; //SHA1 Constant
-	uint k4 = 0xca62c1d6; //SHA1 Constant
+	immutable uint k1 = 0x5a827999; //SHA1 Constant
+	immutable uint k2 = 0x6ed9eba1; //SHA1 Constant
+	immutable uint k3 = 0x8f1bbcdc; //SHA1 Constant
+	immutable uint k4 = 0xca62c1d6; //SHA1 Constant
 	
 	uint[5] H; ///Hash iteration vars.
 	ubyte[] buffer;
@@ -178,7 +177,6 @@ class SHA1Context : HashContext
 	 */
 	void AddToHash(ubyte[] m)
 	{	
-		//writeln(m);
 		
 		uint[16][] M;
 		
@@ -305,40 +303,32 @@ class SHA1Context : HashContext
 		//return WordsToBytes(H);
 	}
 	
-	ubyte[16] As128bitKey()
-	{
-		ubyte[16] k;
-		for (uint i = 0; i < 4; i++)
-		{
-			for(uint j = 0; j < 4; j++)
-			{
-				k[4*i + j] = cast(ubyte)((H[i] >> (3-j)*8) & 0xFF) ;
-			}
-		}
-		return k;
-	}
 	
-	unittest
-	{
-		SHA1Context sha1test1 = new SHA1Context();
-		ubyte[] input = [0x61, 0x62, 0x63];
-		sha1test1.AddToContext(input);
-		sha1test1.End();
-		assert(sha1test1.AsString() == "a9993e364706816aba3e25717850c26c9cd0d89d");
-		
-		SHA1Context sha1test2 = new SHA1Context();
-		sha1test2.AddToContext("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq");
-		sha1test2.End();
-		assert(sha1test2.AsString() == "84983e441c3bd26ebaae4aa1f95129e5e54670f1");
-		
-		SHA1Context sha1test3 = new SHA1Context();
-		
-		string millionA;
-		for(uint i = 0; i < 1000000; i++)
-			sha1test3.AddToContext("a");
-		
-		sha1test3.End();
-		assert(sha1test3.AsString() == "34aa973cd4c4daa4f61eeb2bdbad27316534016f");
-	}
 	
+}
+
+unittest
+{
+	SHA1Context sha1test1 = new SHA1Context();
+	ubyte[] input = [0x61, 0x62, 0x63];
+	sha1test1.AddToContext(input);
+	sha1test1.End();
+	assert(sha1test1.AsString() == "a9993e364706816aba3e25717850c26c9cd0d89d");
+	
+	SHA1Context sha1test2 = new SHA1Context();
+	sha1test2.AddToContext("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq");
+	sha1test2.End();
+	assert(sha1test2.AsString() == "84983e441c3bd26ebaae4aa1f95129e5e54670f1");
+	
+	SHA1Context sha1test3 = new SHA1Context();
+	
+	string millionA;
+	for(uint i = 0; i < 1000000; i++)
+	sha1test3.AddToContext("a");
+	
+	sha1test3.End();
+	assert(sha1test3.AsString() == "34aa973cd4c4daa4f61eeb2bdbad27316534016f");
+	
+	import std.stdio;
+	writeln("SHA1 unittest passed.");
 }

@@ -52,6 +52,8 @@ class RIPEMD160Context : HashContext
 {
 	private:
 	
+	union words { ubyte[16*4] b; uint[16] i; }
+	
 	static immutable uint[16] ro = [7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8];
 	
 	@safe pure uint pi(uint i) { return (9*i+5)%16; }
@@ -176,17 +178,21 @@ class RIPEMD160Context : HashContext
 	void AddToHash(ubyte[] F)
 	{
 		uint[16] X;
+		words Xw;
 		for(uint i = 0; i < F.length/64; i++)
 		{
 			uint A1 = H[0]; uint B1 = H[1]; uint C1 = H[2]; uint D1 = H[3]; uint E1 = H[4];
 			uint A2 = H[0]; uint B2 = H[1]; uint C2 = H[2]; uint D2 = H[3]; uint E2 = H[4];
 			
-			for(uint j = 0; j < 16; j++)
-			{
-				ubyte[4] w = F[i*64+4*j..i*64+4*j+4];
-				X[j] = w[0] + (w[1]<<8)+(w[2]<<16)+(w[3]<<24);
-				//X[j] = w[3] + (w[2]<<8)+(w[1]<<16)+(w[0]<<24);
-			}
+//			for(uint j = 0; j < 16; j++)
+//			{
+//				ubyte[4] w = F[i*64+4*j..i*64+4*j+4];
+//				X[j] = w[0] + (w[1]<<8)+(w[2]<<16)+(w[3]<<24);
+//			}
+			Xw.b = F[i*64..i*64+4*16]; //This is much faster :)
+			X[] = Xw.i;
+			
+			
 			uint T;
 			for(uint j = 0; j < 80; j++)
 			{

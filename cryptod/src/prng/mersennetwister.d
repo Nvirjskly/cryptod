@@ -319,23 +319,23 @@ unittest
 	{
 		assert(testVectors[i] == mt.getNextInt());
 	}
-	import cryptod.tests.prngtest;
-	import std.datetime;
-	
-	ulong t = Clock.currTime().stdTime();
-	
-	uint[] key = [(t&0xffff),(t>>1)&0xffff,(t>>2)&0xffff,(t>>3)&0xffff,(t>>4)&0xffff,(t>>5)&0xffff,(t>>6)&0xffff,(t>>7)&0xffff
-	,(t>>8)&0xffff,(t>>9)&0xffff,(t>>10)&0xffff,(t>>11)&0xffff,(t>>12)&0xffff,(t>>13)&0xffff,(t>>14)&0xffff,(t>>15)&0xffff];
-	
-	MersenneTwister mt2 = new MersenneTwister(key);
-	
-	FrequencyTest ft = new FrequencyTest(mt2);
-	
-	assert(ft.run());
-	
-	RunsTest rt = new RunsTest(mt2);
-	
-	assert(rt.run());
+//	import cryptod.tests.prngtest;
+//	import std.datetime;
+//	
+//	ulong t = Clock.currTime().stdTime();
+//	
+//	uint[] key = [(t&0xffff),(t>>1)&0xffff,(t>>2)&0xffff,(t>>3)&0xffff,(t>>4)&0xffff,(t>>5)&0xffff,(t>>6)&0xffff,(t>>7)&0xffff
+//	,(t>>8)&0xffff,(t>>9)&0xffff,(t>>10)&0xffff,(t>>11)&0xffff,(t>>12)&0xffff,(t>>13)&0xffff,(t>>14)&0xffff,(t>>15)&0xffff];
+//	
+//	MersenneTwister mt2 = new MersenneTwister(key);
+//	
+//	FrequencyTest ft = new FrequencyTest(mt2);
+//	
+//	assert(ft.run());
+//	
+//	RunsTest rt = new RunsTest(mt2);
+//	
+//	assert(rt.run());
 	
 	import std.stdio;
 	writeln("Mersenne Twister unittest passed.");

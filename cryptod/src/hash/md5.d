@@ -57,6 +57,9 @@ ubyte[] MD5ub(ubyte[] s)
 class MD5Context
 {
 	private:
+	
+	union words { ubyte[16*4] b; uint[16] i; }
+	
 	immutable uint T[] = [0,//The zero is there because the spec starts counting from 1 :/
 	0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,  
 	0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,  
@@ -78,10 +81,11 @@ class MD5Context
 	void PadMessage()
 	{
 		M ~= 0b10000000;
-		while(M.length % 64 != 56)
-		{
-			M ~= 0;
-		}
+//		while(M.length % 64 != 56)
+//		{
+//			M ~= 0;
+//		}
+		M ~= new ubyte[(M.length>56)?(64-M.length+56):(56-(M.length % 64))];//more D-like
 		PadLength();
 	}
 	//Pads the message with the message length as too spec. Lowest order bits first.
@@ -146,13 +150,16 @@ class MD5Context
 	
 	void AddToHash(ubyte[] H)
 	{
+		words Xw;
 		for(uint i = 0; i < H.length/64; i++)
 		{
-			for(uint j = 0; j < 16; j++)
-			{
-				ubyte[4] w = H[i*64+4*j..i*64+4*j+4];
-				X[j] = w[0] + (w[1]<<8)+(w[2]<<16)+(w[3]<<24);
-			}
+//			for(uint j = 0; j < 16; j++)
+//			{
+//				ubyte[4] w = H[i*64+4*j..i*64+4*j+4];
+//				X[j] = w[0] + (w[1]<<8)+(w[2]<<16)+(w[3]<<24);
+//			}
+			Xw.b = H[i*64..i*64+4*16]; //This is much faster :)
+			X[] = Xw.i;
 			
 			//Saves A, B, C, and D.
 			AA = A;
