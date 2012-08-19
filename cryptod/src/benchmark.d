@@ -46,6 +46,8 @@ import cryptod.hash.md4;
 
 import cryptod.hash.md5;
 
+import cryptod.hash.ripemd160;
+
 import cryptod.prng.mersennetwister;
 
 import cryptod.prng.blumblumshub;
@@ -143,6 +145,22 @@ void benchmark_md5()
 	benchmark(f,numtimes,strLen,"md5");	
 }
 
+void benchmark_ripemd160()
+{
+	string input = "";
+	
+	uint numtimes = 0x2000;
+	
+	uint strLen = 1024;
+	
+	for(uint i = 0; i < strLen; i++)
+		input ~= text(uniform(0,0xf));
+
+	auto f = delegate(uint i){RIPEMD160s(input);};
+		
+	benchmark(f,numtimes,strLen,"ripemd160");	
+}
+
 void benchmark_mersenne()
 {
 	uint numtimes = 0x1000000;
@@ -209,7 +227,7 @@ void benchmark(void delegate(uint i) f, ulong amount, uint bytes, string message
 	
 	auto time = timer.peek.msecs;
 	
-	string format = "%s "~message~" in %s milliseconds: %s MiB/s";
+	string format = "%s "~message~" in %s milliseconds: %s Mib/s";
 	
 	writefln(format,amount,time,((8*bytes*cast(float)amount)/(1024 * 1024))/((cast(float)time)/1000));
 }
@@ -257,6 +275,7 @@ void main()
 	benchmark_md2();
 	benchmark_md4();
 	benchmark_md5();
+	benchmark_ripemd160();
 	benchmark_sha1();
 	benchmark_mersenne();
 	benchmark_bbs();
