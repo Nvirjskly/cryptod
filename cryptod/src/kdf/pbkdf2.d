@@ -50,20 +50,20 @@ import std.math;
  */
 ubyte[] PBKDF2(ubyte[] function(ubyte[],ubyte[]) PRF, string P, ubyte[] S, uint c, uint dkLen)
 {
+	union word { uint i; ubyte[4] b; }
+	word x;
 	uint hLen = PRF([],[]).length;
 	uint l = cast(uint)ceil((cast(float)dkLen)/(cast(float)hLen));
 	uint r = dkLen - (l - 1) * hLen;
 	
 	ubyte[] F(ubyte[] PP, ubyte[] SS, uint cc, uint ii)
 	{
-		SS ~= [(ii>>24)&0xff,(ii>>16)&0xff,(ii>>8)&0xff,(ii>>0)&0xff];
+		x.i = ii;
+		SS ~= x.b;
 		ubyte[] U = PRF(PP,SS);
 		for(uint j = 1; j < cc; j++)
 		{
-			ubyte[] NU = PRF(PP,U);
-//			for(uint k = 0; k < NU.length; k++)
-//				U[k] ^= NU[k];
-			U[] ^= NU[];
+			U[] ^= PRF(PP,U)[];
 		}
 		return U;
 	}

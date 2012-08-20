@@ -100,7 +100,7 @@ private string makeKeySchedule()
 	string ret = "";
 	for(uint r = 1; r <= 10; r++)
 	{
-		ret ~= "K["~text(r)~"] = μ(ρ(μ(K["~text(r-1)~"]),c"~text(r)~"));\n";
+		ret ~= "K["~text(r)~"] = ro(K["~text(r-1)~"],c"~text(r)~"));\n";
 	}
 	return ret;
 }
@@ -108,12 +108,12 @@ private string makeKeySchedule()
 private string makeW()
 {
 	import std.conv;
-	string ret = "return μ(";
+	string ret = "return mu(";
 	for(int r = 10; r > 0; r--)
 	{
-		ret ~= "ρ(μ(K["~text(r)~"]),";
+		ret ~= "ro(K["~text(r)~"],";
 	}
-	ret ~= "σ(μ(K[0]),μ(η))";
+	ret ~= "sigma(K[0],eta)";
 	for(int r = 10; r > 0; r--)
 	{
 		ret ~= ")";
@@ -130,52 +130,23 @@ class WhirlpoolContext : HashContext
 	
 	ubyte m8(ubyte a, ubyte b) //@safe pure nothrow//multiplication in GF[2]/(x^8+x^4+x^3+x^2+1) 0b00011101
 	{
-		ubyte p;
-		foreach(t; new ubyte[8])
+		ubyte p = 0;
+		for(uint i = 0;i < 8 && a != 0 && b != 0; i++)
 		{
-			if(b&1)
+			if((b&1)==1)
 				p^=a;
-			b>>=1;
-			ubyte carry = a&1;
+			ubyte carry = a&0x80;
 			a<<=1;
-			if(carry)
-				a ^= 0b00011101;
+			if(carry == 0x80)
+				a ^= 0x1D;
+			b>>=1;	
 		}
-		return p;
+		return p & 0xff;
 	}
-//	ubyte m8(ubyte a, ubyte b) @safe pure nothrow
-//	{
-//		ushort p;
-//		ushort s = 0b0000000100011101;
-//		ushort m;
-//		for(uint i = 0; i < 8; i++)
-//		{
-//			ubyte c = a&1;
-//			for(uint j = 0; j < 8; j++)
-//			{
-//				m^=(c&(b>>j)&1)<<(i+j);
-//			}
-//		}
-//		ubyte h = 15;
-//		while( h != 0)
-//		{
-//			if((m>>h)&1)
-//				break;
-//			h--;
-//		}
-//		p = m;
-//		for(int i = h; i > 8; i--)
-//		{
-//			p = cast(ushort)(p ^ (s << (i - 9)));
-//		}
-//		//return ((a * b) % s) &0xff;
-//		
-//		return p&0xff;
-//	}
 	
-	ubyte[64] L;
+	ubyte[32] L;
 	const uint R = 10;//Number of rounds
-	static immutable ubyte[] S = [
+	static immutable ubyte[256] S = [
 	0x18, 0x23, 0xc6, 0xE8, 0x87, 0xB8, 0x01, 0x4F, 0x36, 0xA6, 0xd2, 0xF5, 0x79, 0x6F, 0x91, 0x52,
 	0x60, 0xBc, 0x9B, 0x8E, 0xA3, 0x0c, 0x7B, 0x35, 0x1d, 0xE0, 0xd7, 0xc2, 0x2E, 0x4B, 0xFE, 0x57,
 	0x15, 0x77, 0x37, 0xE5, 0x9F, 0xF0, 0x4A, 0xdA, 0x58, 0xc9, 0x29, 0x0A, 0xB1, 0xA0, 0x6B, 0x85,
@@ -193,19 +164,28 @@ class WhirlpoolContext : HashContext
 	0x2A, 0xBB, 0xc1, 0x53, 0xdc, 0x0B, 0x9d, 0x6c, 0x31, 0x74, 0xF6, 0x46, 0xAc, 0x89, 0x14, 0xE1,
 	0x16, 0x3A, 0x69, 0x09, 0x70, 0xB6, 0xd0, 0xEd, 0xcc, 0x42, 0x98, 0xA4, 0x28, 0x5c, 0xF8, 0x86
 	];
-	mixin(makeC());
+	//mixin(makeC());
+	static immutable ubyte[8][8] C = [
+	[1,1,4,1,8,5,2,9],
+	[9,1,1,4,1,8,5,2],
+	[2,9,1,1,4,1,8,5],
+	[5,2,9,1,1,4,1,8],
+	[8,5,2,9,1,1,4,1],
+	[1,8,5,2,9,1,1,4],
+	[4,1,8,5,2,9,1,1],
+	[1,4,1,8,5,2,9,1]];
 	mixin(makecr(S));
 	ubyte[] M;
 	ubyte[64] H;
 	
-	ubyte[8][8] γ(ubyte[8][8] Μ) //@safe pure nothrow
+	ubyte[8][8] gamma(ubyte[8][8] M) //@safe pure nothrow
 	{
 		for(uint i = 0; i < 8; i++)
 			for(uint j = 0; j < 8; j++)
-				Μ[i][j] = S[Μ[i][j]];
-		return Μ;		
+				M[i][j] = S[M[i][j]];
+		return M;		
 	}
-	ubyte[8][8] μ(ubyte[64] a) //@safe pure nothrow
+	ubyte[8][8] mu(ubyte[64] a) //@safe pure nothrow
 	{
 		ubyte[8][8] A;
 		for(uint i = 0; i<8; i++)
@@ -216,7 +196,7 @@ class WhirlpoolContext : HashContext
 		return A;
 	}
 	
-	ubyte[64] μ(ubyte[8][8] a) //@safe pure nothrow
+	ubyte[64] mu(ubyte[8][8] a) //@safe pure nothrow
 	{
 		ubyte[64] A;
 		for(uint i = 0; i < 8; i++)
@@ -227,61 +207,77 @@ class WhirlpoolContext : HashContext
 		return A;	
 	}
 	
-	ubyte[8][8] π(ubyte[8][8] Μ) //@safe pure nothrow //shift jth column by j
+	ubyte[8][8] pi(ubyte[8][8] M) //@safe pure nothrow //shift jth column by j
 	{
-		ubyte[8][8] Μ2;
+		ubyte[8][8] M2;
 		for(uint j = 0; j < 8; j++)
 			for(uint i = 0; i < 8; i++)
-				Μ2[i][j] = Μ[(i-j)%8][j];
-		return Μ2;
+				M2[i][j] = M[(i-j)%8][j];
+		return M2;
 	}
 	
-	ubyte[8][8] θ(ubyte[8][8] a) //@safe pure nothrow
+	ubyte[8][8] theta(ubyte[8][8] a) //@safe pure nothrow
 	{
+		union word { ulong l; ubyte[8] b; }
+		word ll;
 		ubyte[8][8] A;
 		for(uint i = 0; i < 8; i++)
 			for(uint j = 0; j < 8; j++)
+			{
 				A[i][j] =   m8(a[i][0],C[0][j]) ^ m8(a[i][1],C[1][j]) ^ m8(a[i][2],C[2][j]) ^ m8(a[i][3],C[3][j]) ^
 							m8(a[i][4],C[4][j]) ^ m8(a[i][5],C[5][j]) ^ m8(a[i][6],C[6][j]) ^ m8(a[i][7],C[7][j]);
+			}				
 		
 		return A;
 	}
 	
-	ubyte[8][8] σ(ubyte[8][8] k, ubyte[8][8] a) //@safe pure nothrow
+	ubyte[8][8] sigma(ubyte[8][8] k, ubyte[8][8] a) //@safe pure nothrow
 	{
 		for(uint i = 0; i < 8; i++)
 			for(uint j = 0; j < 8; j++)
-				a[i][j] ^= k[i][j];
-		//import std.stdio;
-		//writeln(k);		
+				a[i][j] ^= k[i][j];	
 		return a;
 	}
 	
-	ubyte[64] W(ubyte[64] Key, ubyte[64] η)
+	ubyte[64] W(ubyte[64] Key, ubyte[8][8] eta)
 	{
-		ubyte[64][11] K = keySchedule(Key);
-		mixin(makeW());
+		ubyte[8][8][11] K = keySchedule(Key);
+		return mu(ro(K[10],ro(K[9],ro(K[8],ro(K[7],ro(K[6],ro(K[5],ro(K[4],ro(K[3],ro(K[2],ro(K[1],sigma(K[0],eta))))))))))));
+		//mixin(makeW());
 	}
 	
-	ubyte[8][8] ρ(ubyte[8][8] k, ubyte[8][8] a) //@safe pure nothrow
+	ubyte[8][8] ro(ubyte[8][8] k, ubyte[8][8] a) //@safe pure nothrow
 	{
-		return σ(k,θ(π(γ(a))));
+		return sigma(k,theta(pi(gamma(a))));
 	}
 	
-	ubyte[64][11] keySchedule(ubyte[64] Key)
+	ubyte[8][8][11] keySchedule(ubyte[64] Key)
 	{
-		ubyte[64][11] K;
-		K[0] = Key;
-		mixin(makeKeySchedule());
+		ubyte[8][8][11] K;
+		K[0] = mu(Key);
+		K[1] = ro(K[0],c1);
+		K[2] = ro(K[1],c2);
+		K[3] = ro(K[2],c3);
+		K[4] = ro(K[3],c4);
+		K[5] = ro(K[4],c5);
+		K[6] = ro(K[5],c6);
+		K[7] = ro(K[6],c7);
+		K[8] = ro(K[7],c8);
+		K[9] = ro(K[8],c9);
+		K[10] = ro(K[9],c10);
+		//mixin(makeKeySchedule());
 		return K;
 	}
 	
 	void AddToHash(ubyte[] F)
 	{
+		import std.stdio;
+		
+		writeln(F.length,F);
 		for(uint i = 0; i < F.length/64; i++)
 		{
-			ubyte[64] η = F[i*64..64 * (i+1)];
-			H[] = W(H, η)[] ^ H[] ^ η[];
+			ubyte[64] eta = F[i*64..64 * (i+1)];
+			H[] = W(H, mu(eta))[] ^ H[] ^ eta[];
 		}	
 	}
 	
@@ -296,8 +292,8 @@ class WhirlpoolContext : HashContext
 	
 	void AddToLength(ulong l)
 	{
-		L[63] += l&0xff;
-		for(int i = 63; l != 0 && i > 0 ; i--)
+		L[31] += l&0xff;
+		for(int i = 31; l != 0 && i > 0 ; i--)
 		{
 			ubyte carry = (L[i] + l&0xff) >> 8;
 			l >>= 8;
@@ -356,9 +352,9 @@ unittest
 	ww.End();
 	writeln(ww.AsString());
 	
-//	writeln(makeC());
+	//writeln(makeC());
 //	writeln(makecr(WhirlpoolContext.S));
-//	writeln(makeKeySchedule());
-//	writeln(makeW());
+	//writeln(makeKeySchedule());
+	//writeln(makeW());
 }
 
