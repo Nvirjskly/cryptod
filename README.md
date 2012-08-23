@@ -16,19 +16,14 @@ Let's start with a practical example:
 	ulong t = Clock.currTime().stdTime();
 	
 	//makes a seed from the current time
-	uint[] seed = [(t&0xffff),(t>>1)&0xffff,(t>>2)&0xffff,(t>>3)&0xffff,(t>>4)&0xffff,
-	(t>>5)&0xffff,(t>>6)&0xffff,(t>>7)&0xffff,(t>>8)&0xffff,(t>>9)&0xffff,(t>>10)&0xffff,
-	(t>>11)&0xffff,(t>>12)&0xffff,(t>>13)&0xffff,(t>>14)&0xffff,(t>>15)&0xffff];
-	//If I ever get around to it, I will build a much simpler seeding interface 
-	//that will have optional sources of entropy
+	uint[] seed = (cast(uint *)&t)[0..2];
 	
 	//seeds a MersenneTwister
 	MersenneTwister mt = new MersenneTwister(seed);
 	
-	//Generates a random salt (ideally this would be stored in a database after generating.
-	ubyte[] salt = [(mt.getNextInt()&0xff),(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,
-	(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,
-	(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff];
+	//Generates a random salt (ideally this would be stored in a database after generating.)
+	uint s = mt.getNextInt();
+	ubyte[4] salt = (cast(ubyte*)&s)[0..4];
 	
 	//This generates a 128-bit key from the password "password" using a 10,000 iteration PBKDF2 function.
 	ubyte[] key = PBKDF2(&HMAC_SHA1, "password", salt, 10000, 16); 

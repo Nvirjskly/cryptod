@@ -36,8 +36,6 @@ import cryptod.blockcipher.threefish;
 
 import cryptod.blockcipher.aes;
 
-//import cryptod.hash.murmurhash3;
-
 import cryptod.hash.sha1;
 
 import cryptod.hash.md2;
@@ -55,42 +53,6 @@ import cryptod.prng.blumblumshub;
 import cryptod.primes.primes;
 
 import std.datetime, std.stdio, std.random, std.conv, std.bigint;
-
-
-/*void benchmark_murmur3()
-{
-	string input = "";
-	
-	uint numtimes = 0x10000;
-	
-	uint strLen = 1024;
-	
-	for(uint i = 0; i < strLen; i++)
-		input ~= text(uniform(0,0xf));
-	
-	auto f = delegate(uint i){murmurhash3_x86_32(input,i);};
-		
-	benchmark(f,numtimes,strLen,"murmurhash3_x86_32");
-	
-	auto g = delegate(uint i){murmurhash3_x86_128(input,i);};
-		
-	benchmark(f,numtimes,strLen,"murmurhash3_x86_128");
-	
-	auto h = delegate(uint i){murmurhash3_x64_128(input,i);};
-		
-	benchmark(f,numtimes,strLen,"murmurhash3_x64_128");
-}*/
-
-//string largeFileSize()
-//{
-//	string ret = "const ulong[] asdf = [";
-//	for(uint i = 0; i < 25_000; i++)
-//		ret ~= "0,";
-//	ret ~= "0];";	
-//	return ret;
-//}
-//mixin(largeFileSize());
-//auto bigfile = cast(immutable ubyte[])import("bigfile");
 
 
 void benchmark_sha1()
@@ -256,15 +218,14 @@ void main()
 	ulong t = Clock.currTime().stdTime();
 	
 	//makes a seed from the current time
-	uint[] seed = [(t&0xffff),(t>>1)&0xffff,(t>>2)&0xffff,(t>>3)&0xffff,(t>>4)&0xffff,(t>>5)&0xffff,(t>>6)&0xffff,(t>>7)&0xffff
-	,(t>>8)&0xffff,(t>>9)&0xffff,(t>>10)&0xffff,(t>>11)&0xffff,(t>>12)&0xffff,(t>>13)&0xffff,(t>>14)&0xffff,(t>>15)&0xffff];
+	uint[] seed = (cast(uint *)&t)[0..2];
 	
 	//seeds a MersenneTwister
 	MersenneTwister mt = new MersenneTwister(seed);
 	
-	//Generates a random salt (ideally this would be stored in a database after generating.
-	ubyte[] salt = [(mt.getNextInt()&0xff),(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,
-	(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff,(mt.getNextInt())&0xff];
+	//Generates a random salt (ideally this would be stored in a database after generating.)
+	uint s = mt.getNextInt();
+	ubyte[4] salt = (cast(ubyte*)&s)[0..4];
 	
 	//This generates a 128-bit key from the password "password" using a 10,000 iteration PBKDF2 function.
 	ubyte[] key = PBKDF2(&HMAC_SHA1, "password", salt, 10000, 16); 
@@ -283,7 +244,6 @@ void main()
 	
 	assert(input == deciphered);
 	
-	//benchmark_murmur3();
 	benchmark_md2();
 	benchmark_md4();
 	benchmark_md5();
@@ -294,10 +254,4 @@ void main()
 	benchmark_blowfish();
 	benchmark_threefish();
 	benchmark_aes();
-	
-//	import std.file;
-//	ulong[] buffer = [];
-//	for(ulong i = 0; i < 100_000; i++)
-//		buffer ~= i;
-//	std.file.write("bigfile", buffer);
 }

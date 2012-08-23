@@ -30,6 +30,22 @@
  * Authors: Andrey A. Popov, andrey.anat.popov@gmail.com
  */
 
+
+//BROKEN
+
+//DO NOT USE YET
+
+//DOES NOT WORK CORRECTLY
+
+//PLEASE READ THIS
+
+//DO NOT USE
+
+//THERE ARE BUGS IN THE CODE
+
+//I WILL TRACK YOU DOWN IF YOU TRY TO USE THIS AS IT'S NOT DONE.
+
+
 module cryptod.hash.whirlpool;
 
 import cryptod.hash.hash;
@@ -139,7 +155,7 @@ class WhirlpoolContext : HashContext
 			a<<=1;
 			if(carry == 0x80)
 				a ^= 0x1D;
-			b>>=1;	
+			b>>=1;
 		}
 		return p & 0xff;
 	}
@@ -226,6 +242,8 @@ class WhirlpoolContext : HashContext
 			{
 				A[i][j] =   m8(a[i][0],C[0][j]) ^ m8(a[i][1],C[1][j]) ^ m8(a[i][2],C[2][j]) ^ m8(a[i][3],C[3][j]) ^
 							m8(a[i][4],C[4][j]) ^ m8(a[i][5],C[5][j]) ^ m8(a[i][6],C[6][j]) ^ m8(a[i][7],C[7][j]);
+//				A[i][j] =   m8(C[i][0],a[0][j]) ^ m8(C[i][1],a[1][j]) ^ m8(C[i][2],a[2][j]) ^ m8(C[i][3],a[3][j]) ^
+//							m8(C[i][4],a[4][j]) ^ m8(C[i][5],a[5][j]) ^ m8(C[i][6],a[6][j]) ^ m8(C[i][7],a[7][j]);
 			}				
 		
 		return A;
@@ -292,6 +310,7 @@ class WhirlpoolContext : HashContext
 	
 	void AddToLength(ulong l)
 	{
+		l = l*8;
 		L[31] += l&0xff;
 		for(int i = 31; l != 0 && i > 0 ; i--)
 		{
@@ -353,7 +372,7 @@ unittest
 	writeln(ww.AsString());
 	
 	//writeln(makeC());
-//	writeln(makecr(WhirlpoolContext.S));
+	//writeln(makecr(WhirlpoolContext.S));
 	//writeln(makeKeySchedule());
 	//writeln(makeW());
 }
