@@ -53,7 +53,7 @@ ubyte[] hmac(alias hash)(ubyte[] key, ubyte[] message)
 	ubyte[] o_key_pad = new ubyte[key.length];
 	ubyte[] i_key_pad = new ubyte[key.length];
 	
-	o_key_pad[] = 0x57 ^ key[];
+	o_key_pad[] = 0x5c ^ key[];
 	i_key_pad[] = 0x36 ^ key[];
 	
 	return hash(o_key_pad ~ hash(i_key_pad ~ message));
